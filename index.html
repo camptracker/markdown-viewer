@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Markdown Viewer</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>" />
+</head>
+<body>
+  <div id="app">
+    <!-- Top Bar -->
+    <header class="topbar">
+      <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
+        <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect y="3" width="20" height="2" rx="1" fill="currentColor"/><rect y="9" width="20" height="2" rx="1" fill="currentColor"/><rect y="15" width="20" height="2" rx="1" fill="currentColor"/></svg>
+      </button>
+      <h1 class="topbar-title">Markdown Viewer</h1>
+      <div class="topbar-actions">
+        <button class="btn btn-primary" id="newBtn">+ New</button>
+        <button class="btn btn-icon" id="themeToggle" aria-label="Toggle theme">
+          <svg class="icon-sun" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+          <svg class="icon-moon" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+        </button>
+      </div>
+    </header>
+
+    <div class="layout">
+      <!-- Sidebar -->
+      <aside class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+          <h2>History</h2>
+        </div>
+        <ul class="history-list" id="historyList"></ul>
+        <div class="sidebar-empty" id="sidebarEmpty">
+          <p>No files yet. Upload or paste markdown to get started.</p>
+        </div>
+      </aside>
+
+      <!-- Main Content -->
+      <main class="main-content" id="mainContent">
+        <!-- Input View -->
+        <div class="input-view" id="inputView">
+          <div class="drop-zone" id="dropZone">
+            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+            <p>Drag & drop a <strong>.md</strong> file here</p>
+            <span>or</span>
+            <label class="btn btn-secondary file-label">
+              Choose File
+              <input type="file" id="fileInput" accept=".md,.markdown,.txt" hidden />
+            </label>
+          </div>
+
+          <div class="divider"><span>or paste markdown below</span></div>
+
+          <div class="paste-area">
+            <textarea id="markdownInput" placeholder="Paste your markdown here..."></textarea>
+            <button class="btn btn-primary render-btn" id="renderBtn">Render</button>
+          </div>
+        </div>
+
+        <!-- Rendered View -->
+        <div class="rendered-view hidden" id="renderedView">
+          <div class="rendered-header">
+            <h2 id="renderedTitle">Preview</h2>
+            <button class="btn btn-secondary" id="backBtn">Back to Input</button>
+          </div>
+          <article class="markdown-body" id="markdownOutput"></article>
+        </div>
+      </main>
+    </div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
