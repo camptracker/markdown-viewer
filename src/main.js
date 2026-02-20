@@ -730,6 +730,19 @@ alignLeft.addEventListener('click', () => setAlign('left'));
 alignCenter.addEventListener('click', () => setAlign('center'));
 alignRight.addEventListener('click', () => setAlign('right'));
 
+// Copy URL button
+const copyUrlBtn = $('#copyUrlBtn');
+copyUrlBtn.addEventListener('click', () => {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    copyUrlBtn.classList.add('copied');
+    copyUrlBtn.setAttribute('title', 'Copied!');
+    setTimeout(() => {
+      copyUrlBtn.classList.remove('copied');
+      copyUrlBtn.setAttribute('title', 'Copy URL');
+    }, 2000);
+  });
+});
+
 // Download button
 downloadBtn.addEventListener('click', () => {
   const entry = findEntry(activeId);
