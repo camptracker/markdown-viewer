@@ -78,8 +78,7 @@ const editArea = $('#editArea');
 const alignLeft = $('#alignLeft');
 const alignCenter = $('#alignCenter');
 const alignRight = $('#alignRight');
-const shareBtn = $('#shareBtn');
-const shareLabel = shareBtn?.querySelector('.share-label');
+const downloadBtn = $('#downloadBtn');
 let isEditMode = false;
 const ALIGN_KEY = 'md-viewer-align';
 
@@ -524,27 +523,19 @@ alignLeft.addEventListener('click', () => setAlign('left'));
 alignCenter.addEventListener('click', () => setAlign('center'));
 alignRight.addEventListener('click', () => setAlign('right'));
 
-// Share button
-shareBtn.addEventListener('click', () => {
-  const url = window.location.href;
-  navigator.clipboard.writeText(url).then(() => {
-    shareLabel.textContent = 'Copied!';
-    shareBtn.classList.add('copied');
-    setTimeout(() => {
-      shareLabel.textContent = 'Share';
-      shareBtn.classList.remove('copied');
-    }, 2000);
-  }).catch(() => {
-    // Fallback
-    const input = document.createElement('input');
-    input.value = url;
-    document.body.appendChild(input);
-    input.select();
-    document.execCommand('copy');
-    input.remove();
-    shareLabel.textContent = 'Copied!';
-    setTimeout(() => { shareLabel.textContent = 'Share'; }, 2000);
-  });
+// Download button
+downloadBtn.addEventListener('click', () => {
+  const entry = findEntry(activeId);
+  if (!entry) return;
+  const blob = new Blob([entry.content], { type: 'text/markdown' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = (entry.name.replace(/[^a-zA-Z0-9_\-. ]/g, '') || 'document') + '.md';
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
 });
 
 // Edit/Preview toggle
