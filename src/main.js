@@ -278,6 +278,35 @@ function clearUrl() {
   window.history.replaceState(null, '', window.location.pathname);
 }
 
+// ===== Meta Tags =====
+function updateMetaTags(title, content) {
+  const pageTitle = title ? `${title} — sharemd.org` : 'sharemd.org';
+  document.title = pageTitle;
+
+  // Extract description: strip markdown syntax, take first 160 chars
+  const desc = content
+    ? content
+        .replace(/^#{1,6}\s+.*$/gm, '') // remove headings
+        .replace(/[*_`~\[\]()>!|-]/g, '') // strip markdown syntax
+        .replace(/\n+/g, ' ')
+        .trim()
+        .slice(0, 160) || 'Shared via sharemd.org'
+    : 'Instant markdown rendering. Paste, drop, edit, and share — no sign-up, no server.';
+
+  const setMeta = (attr, key, value) => {
+    let el = document.querySelector(`meta[${attr}="${key}"]`);
+    if (el) {
+      el.setAttribute('content', value);
+    }
+  };
+
+  setMeta('property', 'og:title', title || 'sharemd.org');
+  setMeta('property', 'og:description', desc);
+  setMeta('name', 'description', desc);
+  setMeta('name', 'twitter:title', title || 'sharemd.org');
+  setMeta('name', 'twitter:description', desc);
+}
+
 // ===== Render Markdown =====
 function renderMarkdown(content, title) {
   tocEntries = [];
@@ -298,6 +327,9 @@ function renderMarkdown(content, title) {
 
   // Build TOC
   buildToc();
+
+  // Update share preview meta tags
+  updateMetaTags(title, content);
 }
 
 function buildToc() {
@@ -355,6 +387,7 @@ function showInputView() {
   newBtn.classList.add('hidden');
   updateActiveState();
   clearUrl();
+  updateMetaTags(null, null);
 }
 
 function showEntry(id) {
