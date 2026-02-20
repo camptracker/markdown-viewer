@@ -5,6 +5,9 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
 
+// Expose for e2e testing
+window.__lzCompress = compressToEncodedURIComponent;
+
 // ===== Constants =====
 const STORAGE_KEY = 'md-viewer-history';
 const THEME_KEY = 'md-viewer-theme';
@@ -232,21 +235,30 @@ function showConfirmModal(title, message, onConfirm) {
 
 // ===== URL Serialization =====
 function contentToHash(content, title) {
-  let hash = '#md=' + compressToEncodedURIComponent(content);
-  if (title) hash += '&title=' + encodeURIComponent(title);
-  return hash;
+  const compressed = compressToEncodedURIComponent(content);
+  if (title) {
+    // Encode title + content together so no delimiter issues
+    const payload = JSON.stringify({ t: title, c: compressed });
+    return '#mdt=' + compressToEncodedURIComponent(payload);
+  }
+  return '#md=' + compressed;
 }
 
 function hashToContent() {
   const hash = window.location.hash;
-  if (!hash.startsWith('#md=')) return null;
   try {
-    // Split on &title= to separate content from title
-    const titleIdx = hash.indexOf('&title=');
-    const mdPart = titleIdx >= 0 ? hash.slice(4, titleIdx) : hash.slice(4);
-    const title = titleIdx >= 0 ? decodeURIComponent(hash.slice(titleIdx + 7)) : null;
-    const content = decompressFromEncodedURIComponent(mdPart);
-    return { content, title };
+    // New format with title
+    if (hash.startsWith('#mdt=')) {
+      const payload = JSON.parse(decompressFromEncodedURIComponent(hash.slice(5)));
+      const content = decompressFromEncodedURIComponent(payload.c);
+      return content ? { content, title: payload.t || null } : null;
+    }
+    // Legacy format (content only)
+    if (hash.startsWith('#md=')) {
+      const content = decompressFromEncodedURIComponent(hash.slice(4));
+      return content ? { content, title: null } : null;
+    }
+    return null;
   } catch {
     return null;
   }

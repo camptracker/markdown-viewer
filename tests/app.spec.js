@@ -6,14 +6,9 @@ test.beforeEach(async ({ page }) => {
   await page.goto(BASE);
   await page.evaluate(() => localStorage.clear());
   await page.reload();
-  // Welcome doc auto-shows; wait for it to load
-  await page.waitForSelector('#renderedView:not(.hidden)', { timeout: 3000 }).catch(() => {});
+  // Default is input/create view
+  await page.waitForSelector('#inputView:not(.hidden)', { timeout: 3000 }).catch(() => {});
 });
-
-async function goToInput(page) {
-  await page.click('#newBtn');
-  await page.waitForSelector('#inputView:not(.hidden)', { timeout: 2000 });
-}
 
 test.describe('Theme', () => {
   test('default theme is light or dark based on preference', async ({ page }) => {
@@ -40,22 +35,18 @@ test.describe('Theme', () => {
 
 test.describe('Paste & Render', () => {
   test('pasting markdown and clicking render shows split pane', async ({ page }) => {
-    await page.click('#newBtn');
     await page.fill('#markdownInput', '# Hello World\n\nSome **bold** text.');
     await page.click('#renderBtn');
 
-    // Input view should be hidden, rendered view visible
     await expect(page.locator('#inputView')).toHaveClass(/hidden/);
     await expect(page.locator('#renderedView')).not.toHaveClass(/hidden/);
 
-    // Preview should contain rendered HTML
     const html = await page.locator('#markdownOutput').innerHTML();
     expect(html).toContain('Hello World');
     expect(html).toContain('<strong>bold</strong>');
   });
 
   test('Ctrl+Enter renders markdown', async ({ page }) => {
-    await page.click('#newBtn');
     await page.fill('#markdownInput', '## Test');
     await page.press('#markdownInput', 'Meta+Enter');
 
@@ -65,7 +56,6 @@ test.describe('Paste & Render', () => {
   });
 
   test('empty paste does nothing', async ({ page }) => {
-    await page.click('#newBtn');
     await page.fill('#markdownInput', '');
     await page.click('#renderBtn');
     await expect(page.locator('#inputView')).not.toHaveClass(/hidden/);
@@ -74,7 +64,6 @@ test.describe('Paste & Render', () => {
 
 test.describe('Edit/Preview toggle', () => {
   test('default is preview mode', async ({ page }) => {
-    await goToInput(page);
     await page.fill('#markdownInput', '# Test');
     await page.click('#renderBtn');
 
@@ -84,18 +73,15 @@ test.describe('Edit/Preview toggle', () => {
   });
 
   test('clicking Edit shows textarea, clicking Preview renders', async ({ page }) => {
-    await goToInput(page);
     await page.fill('#markdownInput', '# Original');
     await page.click('#renderBtn');
 
-    // Switch to edit
     await page.click('#editToggle');
     await expect(page.locator('#editArea')).not.toHaveClass(/hidden/);
     await expect(page.locator('#markdownOutput')).toHaveClass(/hidden/);
     const value = await page.locator('#editTextarea').inputValue();
     expect(value).toBe('# Original');
 
-    // Modify and switch back to preview
     await page.fill('#editTextarea', '# Modified');
     await page.click('#previewToggle');
     await expect(page.locator('#markdownOutput')).not.toHaveClass(/hidden/);
@@ -104,7 +90,6 @@ test.describe('Edit/Preview toggle', () => {
   });
 
   test('edits are saved to history', async ({ page }) => {
-    await goToInput(page);
     await page.fill('#markdownInput', '# Save Test');
     await page.click('#renderBtn');
 
@@ -112,7 +97,6 @@ test.describe('Edit/Preview toggle', () => {
     await page.fill('#editTextarea', '# Edited Content');
     await page.click('#previewToggle');
 
-    // Reload and check history still has edited content
     await page.reload();
     await page.click('.history-item-info');
     await page.click('#editToggle');
@@ -123,52 +107,43 @@ test.describe('Edit/Preview toggle', () => {
 
 test.describe('History', () => {
   test('rendered markdown is saved to history sidebar', async ({ page }) => {
-    await goToInput(page);
     await page.fill('#markdownInput', '# Doc 1');
     await page.click('#renderBtn');
 
-    // Should have the user doc in sidebar (plus the permanent welcome doc)
     const userDoc = page.locator('.history-item-info', { hasText: 'Untitled Paste' });
     await expect(userDoc).toBeVisible();
   });
 
   test('clicking history item loads it', async ({ page }) => {
-    await goToInput(page);
     await page.fill('#markdownInput', '# First');
     await page.click('#renderBtn');
 
-    // Go back to input
     await page.click('#newBtn');
     await page.fill('#markdownInput', '# Second');
     await page.click('#renderBtn');
 
-    // Click first history item (Second is at top since most recent)
     const items = page.locator('.history-item-info');
-    await items.nth(1).click(); // "First" is second in list
+    await items.nth(1).click();
 
     const textarea = await page.locator('#editTextarea').inputValue();
     expect(textarea).toBe('# First');
   });
 
   test('delete removes from history', async ({ page }) => {
-    await goToInput(page);
     await page.fill('#markdownInput', '# Delete Me');
     await page.click('#renderBtn');
 
-    // Verify user doc exists then delete it
     const deleteBtn = page.locator('.history-item', { hasText: 'Untitled Paste' }).locator('.history-item-delete');
     await deleteBtn.click();
-    // User doc should be gone
+    await page.click('.confirm-btn.delete');
     await expect(page.locator('.history-item-info', { hasText: 'Untitled Paste' })).toHaveCount(0);
   });
 
   test('history persists after reload', async ({ page }) => {
-    await goToInput(page);
     await page.fill('#markdownInput', '# Persistent');
     await page.click('#renderBtn');
     await page.reload();
 
-    // User doc persists (visible alongside welcome)
     const userDoc = page.locator('.history-item-info', { hasText: 'Untitled Paste' });
     await expect(userDoc).toBeVisible();
   });
@@ -176,7 +151,6 @@ test.describe('History', () => {
 
 test.describe('New button', () => {
   test('returns to input view', async ({ page }) => {
-    await goToInput(page);
     await page.fill('#markdownInput', '# Test');
     await page.click('#renderBtn');
 
@@ -188,22 +162,18 @@ test.describe('New button', () => {
 
 test.describe('URL serialization', () => {
   test('rendering sets hash in URL', async ({ page }) => {
-    await goToInput(page);
     await page.fill('#markdownInput', '# URL Test');
     await page.click('#renderBtn');
 
     const url = page.url();
-    expect(url).toContain('#md=');
+    expect(url).toMatch(/#mdt?=/);
   });
 
   test('visiting URL with hash loads content', async ({ page }) => {
-    // First create a hash
-    await goToInput(page);
     await page.fill('#markdownInput', '# Shared Doc');
     await page.click('#renderBtn');
     const url = page.url();
 
-    // Navigate to that URL fresh
     await page.evaluate(() => localStorage.clear());
     await page.goto(url);
 
@@ -213,7 +183,6 @@ test.describe('URL serialization', () => {
   });
 
   test('editing updates URL hash on preview switch', async ({ page }) => {
-    await goToInput(page);
     await page.fill('#markdownInput', '# Before');
     await page.click('#renderBtn');
     const urlBefore = page.url();
@@ -227,51 +196,47 @@ test.describe('URL serialization', () => {
   });
 
   test('new button clears URL hash', async ({ page }) => {
-    await goToInput(page);
     await page.fill('#markdownInput', '# Test');
     await page.click('#renderBtn');
-    expect(page.url()).toContain('#md=');
+    expect(page.url()).toMatch(/#mdt?=/);
 
     await page.click('#newBtn');
-    expect(page.url()).not.toContain('#md=');
+    expect(page.url()).not.toMatch(/#mdt?=/);
   });
 });
 
 test.describe('Welcome doc', () => {
   test('welcome doc is always visible in sidebar', async ({ page }) => {
-    const welcomeItem = page.locator('.history-item-info', { hasText: 'Welcome to Markdown Viewer' });
+    const welcomeItem = page.locator('.history-item-info', { hasText: 'Getting Started' });
     await expect(welcomeItem).toBeVisible();
   });
 
   test('welcome doc has no delete button', async ({ page }) => {
-    const welcomeRow = page.locator('.history-item', { hasText: 'Welcome to Markdown Viewer' });
+    const welcomeRow = page.locator('.history-item', { hasText: 'Getting Started' });
     await expect(welcomeRow.locator('.history-item-delete')).toHaveCount(0);
   });
 
   test('clicking welcome doc renders it', async ({ page }) => {
-    const welcomeItem = page.locator('.history-item-info', { hasText: 'Welcome to Markdown Viewer' });
+    const welcomeItem = page.locator('.history-item-info', { hasText: 'Getting Started' });
     await welcomeItem.click();
     const html = await page.locator('#markdownOutput').innerHTML();
-    expect(html).toContain('Markdown Viewer');
-    expect(html).toContain('Features');
+    expect(html).toContain('Getting Started');
   });
 
   test('welcome doc persists even after clearing history', async ({ page }) => {
-    // Add a doc then delete it
-    await page.click('#newBtn');
     await page.fill('#markdownInput', '# Temp');
     await page.click('#renderBtn');
-    await page.click('.history-item-delete');
+    const deleteBtn = page.locator('.history-item', { hasText: 'Untitled Paste' }).locator('.history-item-delete');
+    await deleteBtn.click();
+    await page.click('.confirm-btn.delete');
 
-    // Welcome should still be there
-    const welcomeItem = page.locator('.history-item-info', { hasText: 'Welcome to Markdown Viewer' });
+    const welcomeItem = page.locator('.history-item-info', { hasText: 'Getting Started' });
     await expect(welcomeItem).toBeVisible();
   });
 });
 
 test.describe('GFM features', () => {
   test('renders tables', async ({ page }) => {
-    await goToInput(page);
     await page.fill('#markdownInput', '| Col A | Col B |\n|---|---|\n| 1 | 2 |');
     await page.click('#renderBtn');
     const html = await page.locator('#markdownOutput').innerHTML();
@@ -279,7 +244,6 @@ test.describe('GFM features', () => {
   });
 
   test('renders task lists', async ({ page }) => {
-    await goToInput(page);
     await page.fill('#markdownInput', '- [x] Done\n- [ ] Todo');
     await page.click('#renderBtn');
     const html = await page.locator('#markdownOutput').innerHTML();
@@ -287,10 +251,134 @@ test.describe('GFM features', () => {
   });
 
   test('renders code blocks with syntax highlighting', async ({ page }) => {
-    await goToInput(page);
     await page.fill('#markdownInput', '```js\nconst x = 1;\n```');
     await page.click('#renderBtn');
     const html = await page.locator('#markdownOutput').innerHTML();
     expect(html).toContain('<code');
+  });
+});
+
+test.describe('localStorage persistence', () => {
+  test('history entries survive page reload', async ({ page }) => {
+    await page.fill('#markdownInput', '# Persist Test');
+    await page.click('#renderBtn');
+
+    const count = await page.evaluate(() => {
+      const h = JSON.parse(localStorage.getItem('md-viewer-history'));
+      return h ? h.length : 0;
+    });
+    expect(count).toBe(1);
+
+    await page.reload();
+    const userDoc = page.locator('.history-item-info', { hasText: 'Untitled Paste' });
+    await expect(userDoc).toBeVisible();
+
+    await userDoc.click();
+    await expect(page.locator('#renderedView')).not.toHaveClass(/hidden/);
+    const html = await page.locator('#markdownOutput').innerHTML();
+    expect(html).toContain('Persist Test');
+  });
+
+  test('multiple history entries persist and load correctly', async ({ page }) => {
+    await page.fill('#markdownInput', '# Doc Alpha');
+    await page.click('#renderBtn');
+    await page.click('#newBtn');
+    await page.fill('#markdownInput', '# Doc Beta');
+    await page.click('#renderBtn');
+
+    await page.reload();
+
+    const count = await page.evaluate(() => {
+      const h = JSON.parse(localStorage.getItem('md-viewer-history'));
+      return h ? h.length : 0;
+    });
+    expect(count).toBe(2);
+
+    const items = page.locator('.history-item-info');
+    await items.nth(1).click();
+    await page.click('#editToggle');
+    const value = await page.locator('#editTextarea').inputValue();
+    expect(value).toBe('# Doc Alpha');
+  });
+
+  test('edited content persists after reload', async ({ page }) => {
+    await page.fill('#markdownInput', '# Original');
+    await page.click('#renderBtn');
+
+    await page.click('#editToggle');
+    await page.fill('#editTextarea', '# Updated Content');
+    await page.click('#previewToggle');
+
+    await page.reload();
+    await page.click('.history-item-info');
+    await page.click('#editToggle');
+    const value = await page.locator('#editTextarea').inputValue();
+    expect(value).toBe('# Updated Content');
+  });
+
+  test('renamed title persists after reload', async ({ page }) => {
+    await page.fill('#markdownInput', '# Test');
+    await page.click('#renderBtn');
+
+    await page.click('.history-item-rename');
+    await page.fill('.history-rename-input', 'My Custom Title');
+    await page.press('.history-rename-input', 'Enter');
+
+    await page.reload();
+    const renamedDoc = page.locator('.history-item-info', { hasText: 'My Custom Title' });
+    await expect(renamedDoc).toBeVisible();
+  });
+
+  test('localStorage is not corrupted by special characters', async ({ page }) => {
+    await page.fill('#markdownInput', '# Test with "quotes" & <tags> & émojis 🎉');
+    await page.click('#renderBtn');
+
+    await page.reload();
+    await page.click('.history-item-info');
+    const html = await page.locator('#markdownOutput').innerHTML();
+    expect(html).toContain('émojis');
+  });
+});
+
+test.describe('URL title serialization', () => {
+  test('URL includes title after rename', async ({ page }) => {
+    await page.fill('#markdownInput', '# Test');
+    await page.click('#renderBtn');
+
+    await page.click('.history-item-rename');
+    await page.fill('.history-rename-input', 'Named Doc');
+    await page.press('.history-rename-input', 'Enter');
+
+    const url = page.url();
+    expect(url).toContain('#mdt=');
+  });
+
+  test('opening URL with title shows correct title', async ({ page }) => {
+    await page.fill('#markdownInput', '# Hello Title');
+    await page.click('#renderBtn');
+
+    await page.click('.history-item-rename');
+    await page.fill('.history-rename-input', 'My Titled Doc');
+    await page.press('.history-rename-input', 'Enter');
+
+    const url = page.url();
+
+    await page.evaluate(() => localStorage.clear());
+    await page.goto(url);
+
+    await expect(page.locator('#renderedView')).not.toHaveClass(/hidden/);
+    const title = await page.locator('#renderedTitle').textContent();
+    expect(title).toBe('My Titled Doc');
+  });
+
+  test('legacy #md= URLs still work', async ({ page }) => {
+    const legacyHash = await page.evaluate(() => window.__lzCompress('# Legacy Content'));
+
+    await page.evaluate(() => localStorage.clear());
+    await page.goto(BASE + '/#md=' + legacyHash);
+
+    await expect(page.locator('#renderedView')).not.toHaveClass(/hidden/);
+    const html = await page.locator('#markdownOutput').innerHTML();
+    expect(html).toContain('Legacy Content');
   });
 });
