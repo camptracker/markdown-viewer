@@ -367,8 +367,9 @@ test.describe('URL title serialization', () => {
     await page.goto(url);
 
     await expect(page.locator('#renderedView')).not.toHaveClass(/hidden/);
-    const title = await page.locator('#renderedTitle').textContent();
-    expect(title).toBe('My Titled Doc');
+    // Verify the entry was created with the title from the URL
+    const entryName = await page.locator('.history-item-name').first().textContent();
+    expect(entryName).toBe('My Titled Doc');
   });
 
   test('legacy #md= URLs still work', async ({ page }) => {

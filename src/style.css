@@ -723,32 +723,27 @@ textarea#markdownInput:focus {
   display: none;
 }
 
-.rendered-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 24px;
-  border-bottom: 1px solid var(--border-color);
-  background: var(--bg-secondary);
-  flex-shrink: 0;
-  height: 54px;
-  box-sizing: border-box;
-}
-
-.rendered-header h2 {
-  font-size: 16px;
-  font-weight: 600;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  min-width: 0;
-  margin-right: 12px;
-}
-
-.rendered-header-actions {
+/* ===== Floating Toolbar ===== */
+.floating-toolbar {
+  position: fixed;
+  top: calc(var(--topbar-height) + 12px);
+  right: 24px;
   display: flex;
   align-items: center;
   gap: 8px;
+  padding: 8px 12px;
+  background: var(--bg-secondary);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  box-shadow: var(--shadow-md);
+  z-index: 100;
+  transition: opacity 0.2s, transform 0.2s;
+}
+
+.floating-toolbar.toolbar-hidden {
+  opacity: 0;
+  transform: translateY(-10px);
+  pointer-events: none;
 }
 
 .align-toggle {
@@ -1051,6 +1046,22 @@ textarea#markdownInput:focus {
 
   .align-toggle {
     display: none;
+  }
+
+  .floating-toolbar {
+    position: fixed;
+    top: auto;
+    right: auto;
+    bottom: 20px;
+    left: 50%;
+    transform: translateX(-50%);
+    transition: opacity 0.25s, transform 0.25s;
+  }
+
+  .floating-toolbar.toolbar-hidden {
+    opacity: 0;
+    transform: translateX(-50%) translateY(20px);
+    pointer-events: none;
   }
 
   .input-view {

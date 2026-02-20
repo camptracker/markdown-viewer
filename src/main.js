@@ -77,7 +77,7 @@ const fileInput = $('#fileInput');
 const markdownInput = $('#markdownInput');
 const renderBtn = $('#renderBtn');
 const markdownOutput = $('#markdownOutput');
-const renderedTitle = $('#renderedTitle');
+let currentTitle = 'Preview';
 const editTextarea = $('#editTextarea');
 const editToggle = $('#editToggle');
 const previewToggle = $('#previewToggle');
@@ -316,7 +316,7 @@ function renderMarkdown(content, title) {
     ADD_ATTR: ['type', 'checked', 'disabled', 'class', 'id'],
   });
   markdownOutput.innerHTML = clean;
-  renderedTitle.textContent = title || 'Preview';
+  currentTitle = title || 'Preview';
   inputView.classList.add('hidden');
   renderedView.classList.remove('hidden');
   newBtn.classList.remove('hidden');
@@ -401,7 +401,6 @@ function showEntry(id) {
   updateUrlForEntry(entry);
 
   // Scroll content to top
-  const mainContent = document.querySelector('.main-content');
   if (mainContent) mainContent.scrollTop = 0;
   markdownOutput.scrollTop = 0;
   renderedView.scrollTop = 0;
@@ -432,7 +431,7 @@ function startRename(li, entry) {
     entry.name = newName;
     saveHistory();
     if (activeId === entry.id) {
-      renderedTitle.textContent = newName;
+      currentTitle = newName;
       updateUrlForEntry(entry);
     }
     renderHistoryList();
@@ -664,7 +663,7 @@ previewToggle.addEventListener('click', () => {
     saveHistory();
     updateUrlForEntry(entry);
   }
-  renderMarkdown(editTextarea.value, renderedTitle.textContent);
+  renderMarkdown(editTextarea.value, currentTitle);
   editArea.classList.add('hidden');
   markdownOutput.classList.remove('hidden');
   previewToggle.classList.add('active');
@@ -719,6 +718,24 @@ if (!handleIncomingUrl()) {
 // Collapse sidebar by default on mobile
 if (window.innerWidth <= 768) {
   sidebarEl.classList.add('collapsed');
+}
+
+// Floating toolbar scroll behavior (mobile only: hide on scroll down, show on scroll up)
+const floatingToolbar = $('#floatingToolbar');
+const mainContent = document.querySelector('.main-content');
+let lastScrollTop = 0;
+
+if (mainContent && floatingToolbar) {
+  mainContent.addEventListener('scroll', () => {
+    if (window.innerWidth > 768) return; // Desktop: always visible
+    const st = mainContent.scrollTop;
+    if (st > lastScrollTop && st > 50) {
+      floatingToolbar.classList.add('toolbar-hidden');
+    } else {
+      floatingToolbar.classList.remove('toolbar-hidden');
+    }
+    lastScrollTop = st;
+  });
 }
 
 // Dismiss loading screen

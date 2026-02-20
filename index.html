@@ -78,28 +78,25 @@
 
         <!-- Rendered View -->
         <div class="rendered-view hidden" id="renderedView">
-          <div class="rendered-header">
-            <h2 id="renderedTitle">Preview</h2>
-            <div class="rendered-header-actions">
-              <div class="align-toggle">
-                <button class="toggle-btn active" id="alignLeft" aria-label="Align left" title="Align left">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h12M3 18h18"/></svg>
-                </button>
-                <button class="toggle-btn" id="alignCenter" aria-label="Align center" title="Align center">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M6 12h12M3 18h18"/></svg>
-                </button>
-                <button class="toggle-btn" id="alignRight" aria-label="Align right" title="Align right">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M9 12h12M3 18h18"/></svg>
-                </button>
-              </div>
-              <button class="btn btn-share" id="downloadBtn" aria-label="Download as .md" title="Download as .md">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-                <span>.md</span>
+          <div class="floating-toolbar" id="floatingToolbar">
+            <div class="align-toggle">
+              <button class="toggle-btn active" id="alignLeft" aria-label="Align left" title="Align left">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h12M3 18h18"/></svg>
               </button>
-              <div class="edit-preview-toggle">
-                <button class="toggle-btn" id="editToggle">Edit</button>
-                <button class="toggle-btn active" id="previewToggle">Preview</button>
-              </div>
+              <button class="toggle-btn" id="alignCenter" aria-label="Align center" title="Align center">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M6 12h12M3 18h18"/></svg>
+              </button>
+              <button class="toggle-btn" id="alignRight" aria-label="Align right" title="Align right">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M9 12h12M3 18h18"/></svg>
+              </button>
+            </div>
+            <button class="btn btn-share" id="downloadBtn" aria-label="Download as .md" title="Download as .md">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+              <span>.md</span>
+            </button>
+            <div class="edit-preview-toggle">
+              <button class="toggle-btn" id="editToggle">Edit</button>
+              <button class="toggle-btn active" id="previewToggle">Preview</button>
             </div>
           </div>
           <div class="edit-area hidden" id="editArea">
