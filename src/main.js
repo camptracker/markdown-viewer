@@ -288,6 +288,29 @@ function findEntry(id) {
   return history.find((e) => e.id === id);
 }
 
+function startRename(li, entry) {
+  const nameEl = li.querySelector('.history-item-name');
+  const input = document.createElement('input');
+  input.type = 'text';
+  input.className = 'history-rename-input';
+  input.value = entry.name;
+  nameEl.replaceWith(input);
+  input.focus();
+  input.select();
+  const commit = () => {
+    const newName = input.value.trim() || entry.name;
+    entry.name = newName;
+    saveHistory();
+    if (activeId === entry.id) renderedTitle.textContent = newName;
+    renderHistoryList();
+  };
+  input.addEventListener('blur', commit);
+  input.addEventListener('keydown', (ev) => {
+    if (ev.key === 'Enter') input.blur();
+    if (ev.key === 'Escape') { input.value = entry.name; input.blur(); }
+  });
+}
+
 function renderHistoryList() {
   historyList.innerHTML = '';
 
@@ -311,46 +334,27 @@ function renderHistoryList() {
           <div class="history-item-name">${escapeHtml(entry.name)}</div>
           <div class="history-item-date">${formatDate(entry.date)}</div>
         </div>
-        <button class="history-item-delete" aria-label="Delete" data-id="${entry.id}">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
-        </button>
+        <div class="history-item-actions">
+          <button class="history-item-rename" aria-label="Rename" data-id="${entry.id}">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 3a2.85 2.85 0 114 4L7.5 20.5 2 22l1.5-5.5Z"/></svg>
+          </button>
+          <button class="history-item-delete" aria-label="Delete" data-id="${entry.id}">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+          </button>
+        </div>
       `;
       li.querySelector('.history-item-delete').addEventListener('click', (e) => {
         e.stopPropagation();
         deleteFromHistory(entry.id);
       });
+      li.querySelector('.history-item-rename').addEventListener('click', (e) => {
+        e.stopPropagation();
+        startRename(li, entry);
+      });
     }
 
     li.dataset.entryId = entry.id;
     li.querySelector('.history-item-info').addEventListener('click', () => showEntry(entry.id));
-
-    // Double-click name to rename (non-permanent only)
-    if (!entry.permanent) {
-      const nameEl = li.querySelector('.history-item-name');
-      nameEl.addEventListener('dblclick', (e) => {
-        e.stopPropagation();
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.className = 'history-rename-input';
-        input.value = entry.name;
-        nameEl.replaceWith(input);
-        input.focus();
-        input.select();
-        const commit = () => {
-          const newName = input.value.trim() || entry.name;
-          entry.name = newName;
-          saveHistory();
-          if (activeId === entry.id) renderedTitle.textContent = newName;
-          renderHistoryList();
-        };
-        input.addEventListener('blur', commit);
-        input.addEventListener('keydown', (ev) => {
-          if (ev.key === 'Enter') input.blur();
-          if (ev.key === 'Escape') { input.value = entry.name; input.blur(); }
-        });
-      });
-    }
-
     historyList.appendChild(li);
   });
 }

@@ -440,6 +440,36 @@ html, body {
   opacity: 1;
 }
 
+.history-item-actions {
+  display: flex;
+  gap: 2px;
+  flex-shrink: 0;
+}
+
+.history-item-rename {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border: none;
+  background: transparent;
+  color: var(--text-muted);
+  cursor: pointer;
+  border-radius: 4px;
+  opacity: 0;
+  transition: opacity 0.15s, color 0.15s, background 0.15s;
+}
+
+.history-item:hover .history-item-rename {
+  opacity: 1;
+}
+
+.history-item-rename:hover {
+  color: var(--accent);
+  background: var(--bg-tertiary);
+}
+
 .history-item-delete:hover {
   color: var(--danger);
   background: var(--bg-tertiary);
