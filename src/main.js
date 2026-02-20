@@ -96,7 +96,7 @@ function setTheme(theme) {
 }
 
 // ===== Default Welcome Doc =====
-const WELCOME_MD = `# 📝 Markdown Viewer
+const WELCOME_MD = `# 📝 sharemd.org
 
 **Your instant markdown renderer.** Paste it, drop it, edit it, share it — no sign-up, no server, no nonsense.
 
@@ -145,7 +145,7 @@ Pick your vibe from the dropdown in the top bar:
 | Solarized | Ethan Schoonover's classic |
 | Nord | Arctic, minimal |
 
-## 💡 Why Markdown Viewer?
+## 💡 Why sharemd.org?
 
 - **No account needed** — just open the page and go
 - **Works offline** — once loaded, no internet required
@@ -161,7 +161,7 @@ Pick your vibe from the dropdown in the top bar:
 // ===== History (localStorage) =====
 const WELCOME_ENTRY = {
   id: 'welcome',
-  name: '📝 Welcome to Markdown Viewer',
+  name: '📝 Welcome to sharemd.org',
   content: WELCOME_MD,
   date: '2026-01-01T00:00:00.000Z',
   permanent: true,
