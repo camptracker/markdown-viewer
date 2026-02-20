@@ -452,7 +452,11 @@ function renderHistoryList() {
     }
 
     li.dataset.entryId = entry.id;
-    li.querySelector('.history-item-info').addEventListener('click', () => showEntry(entry.id));
+    li.addEventListener('click', (e) => {
+      // Don't trigger if clicking action buttons, rename input, or TOC links
+      if (e.target.closest('.history-item-actions') || e.target.closest('.history-rename-input') || e.target.closest('.sidebar-toc')) return;
+      showEntry(entry.id);
+    });
     historyList.appendChild(li);
   });
 }

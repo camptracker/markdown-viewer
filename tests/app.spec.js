@@ -110,7 +110,7 @@ test.describe('History', () => {
     await page.fill('#markdownInput', '# Doc 1');
     await page.click('#renderBtn');
 
-    const userDoc = page.locator('.history-item-info', { hasText: 'Untitled Paste' });
+    const userDoc = page.locator('.history-item-info', { hasText: 'Doc 1' });
     await expect(userDoc).toBeVisible();
   });
 
@@ -133,10 +133,10 @@ test.describe('History', () => {
     await page.fill('#markdownInput', '# Delete Me');
     await page.click('#renderBtn');
 
-    const deleteBtn = page.locator('.history-item', { hasText: 'Untitled Paste' }).locator('.history-item-delete');
+    const deleteBtn = page.locator('.history-item', { hasText: 'Delete Me' }).locator('.history-item-delete');
     await deleteBtn.click();
     await page.click('.confirm-btn.delete');
-    await expect(page.locator('.history-item-info', { hasText: 'Untitled Paste' })).toHaveCount(0);
+    await expect(page.locator('.history-item-info', { hasText: 'Delete Me' })).toHaveCount(0);
   });
 
   test('history persists after reload', async ({ page }) => {
@@ -144,7 +144,7 @@ test.describe('History', () => {
     await page.click('#renderBtn');
     await page.reload();
 
-    const userDoc = page.locator('.history-item-info', { hasText: 'Untitled Paste' });
+    const userDoc = page.locator('.history-item-info', { hasText: 'Persistent' });
     await expect(userDoc).toBeVisible();
   });
 });
@@ -226,7 +226,7 @@ test.describe('Welcome doc', () => {
   test('welcome doc persists even after clearing history', async ({ page }) => {
     await page.fill('#markdownInput', '# Temp');
     await page.click('#renderBtn');
-    const deleteBtn = page.locator('.history-item', { hasText: 'Untitled Paste' }).locator('.history-item-delete');
+    const deleteBtn = page.locator('.history-item', { hasText: 'Temp' }).locator('.history-item-delete');
     await deleteBtn.click();
     await page.click('.confirm-btn.delete');
 
@@ -270,7 +270,7 @@ test.describe('localStorage persistence', () => {
     expect(count).toBe(1);
 
     await page.reload();
-    const userDoc = page.locator('.history-item-info', { hasText: 'Untitled Paste' });
+    const userDoc = page.locator('.history-item-info', { hasText: 'Persist Test' });
     await expect(userDoc).toBeVisible();
 
     await userDoc.click();
