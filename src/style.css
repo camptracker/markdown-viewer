@@ -441,6 +441,66 @@ textarea#markdownInput:focus {
   width: 100%;
   margin: 0 auto;
   flex: 1;
+  background: var(--bg-primary) !important;
+  color: var(--text-primary) !important;
+}
+
+[data-theme="dark"] .markdown-body {
+  color-scheme: dark;
+}
+
+[data-theme="dark"] .markdown-body h1,
+[data-theme="dark"] .markdown-body h2,
+[data-theme="dark"] .markdown-body h3,
+[data-theme="dark"] .markdown-body h4,
+[data-theme="dark"] .markdown-body h5,
+[data-theme="dark"] .markdown-body h6 {
+  color: #e6edf3 !important;
+  border-bottom-color: #30363d !important;
+}
+
+[data-theme="dark"] .markdown-body a {
+  color: #58a6ff !important;
+}
+
+[data-theme="dark"] .markdown-body code {
+  background: #21262d !important;
+  color: #e6edf3 !important;
+}
+
+[data-theme="dark"] .markdown-body pre {
+  background: #161b22 !important;
+}
+
+[data-theme="dark"] .markdown-body pre code {
+  background: transparent !important;
+}
+
+[data-theme="dark"] .markdown-body blockquote {
+  border-left-color: #30363d !important;
+  color: #8b949e !important;
+}
+
+[data-theme="dark"] .markdown-body table th,
+[data-theme="dark"] .markdown-body table td {
+  border-color: #30363d !important;
+}
+
+[data-theme="dark"] .markdown-body table tr {
+  background-color: #0d1117 !important;
+  border-top-color: #30363d !important;
+}
+
+[data-theme="dark"] .markdown-body table tr:nth-child(2n) {
+  background-color: #161b22 !important;
+}
+
+[data-theme="dark"] .markdown-body hr {
+  background-color: #30363d !important;
+}
+
+[data-theme="dark"] .markdown-body img {
+  background-color: transparent !important;
 }
 
 /* ===== Responsive ===== */
