@@ -5,7 +5,13 @@ import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
 
-// Dynamically load highlight.js theme based on current theme
+// ===== Constants =====
+const STORAGE_KEY = 'md-viewer-history';
+const THEME_KEY = 'md-viewer-theme';
+const THEMES = ['light', 'dark', 'dracula', 'monokai', 'one-dark', 'solarized', 'nord'];
+const DARK_THEMES = ['dark', 'dracula', 'monokai', 'one-dark', 'solarized', 'nord'];
+
+// ===== Highlight.js Theme =====
 function loadHighlightTheme() {
   const existingLink = document.querySelector('link[data-hljs-theme]');
   if (existingLink) existingLink.remove();
@@ -20,8 +26,6 @@ function loadHighlightTheme() {
   document.head.appendChild(link);
 }
 
-loadHighlightTheme();
-
 // ===== Marked Configuration =====
 marked.setOptions({
   gfm: true,
@@ -34,7 +38,6 @@ marked.setOptions({
   },
 });
 
-// Custom renderer for heading anchors and responsive images
 const renderer = new marked.Renderer();
 
 renderer.heading = function ({ text, depth }) {
@@ -49,8 +52,6 @@ renderer.image = function ({ href, title, text }) {
 marked.use({ renderer });
 
 // ===== State =====
-const STORAGE_KEY = 'md-viewer-history';
-const THEME_KEY = 'md-viewer-theme';
 let history = loadHistory();
 let activeId = null;
 
@@ -73,9 +74,6 @@ const renderedTitle = $('#renderedTitle');
 const editTextarea = $('#editTextarea');
 
 // ===== Theme =====
-const THEMES = ['light', 'dark', 'dracula', 'monokai', 'one-dark', 'solarized', 'nord'];
-const DARK_THEMES = ['dark', 'dracula', 'monokai', 'one-dark', 'solarized', 'nord'];
-
 function initTheme() {
   const saved = localStorage.getItem(THEME_KEY);
   const theme = THEMES.includes(saved) ? saved : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
@@ -85,7 +83,7 @@ function initTheme() {
 function setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem(THEME_KEY, theme);
-  themeSelect.value = theme;
+  if (themeSelect) themeSelect.value = theme;
   loadHighlightTheme();
 }
 
@@ -125,6 +123,31 @@ function deleteFromHistory(id) {
   renderHistoryList();
 }
 
+// ===== URL Serialization =====
+function contentToHash(content) {
+  return '#md=' + compressToEncodedURIComponent(content);
+}
+
+function hashToContent() {
+  const hash = window.location.hash;
+  if (!hash.startsWith('#md=')) return null;
+  try {
+    return decompressFromEncodedURIComponent(hash.slice(4));
+  } catch {
+    return null;
+  }
+}
+
+function updateUrlForEntry(entry) {
+  if (!entry) return;
+  const newHash = contentToHash(entry.content);
+  window.history.replaceState(null, '', newHash);
+}
+
+function clearUrl() {
+  window.history.replaceState(null, '', window.location.pathname);
+}
+
 // ===== Render Markdown =====
 function renderMarkdown(content, title) {
   const raw = marked.parse(content);
@@ -137,7 +160,6 @@ function renderMarkdown(content, title) {
   inputView.classList.add('hidden');
   renderedView.classList.remove('hidden');
 
-  // Fix checkboxes for task lists
   markdownOutput.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
     cb.setAttribute('disabled', '');
   });
@@ -163,7 +185,6 @@ function showEntry(id) {
   updateActiveState();
   updateUrlForEntry(entry);
 
-  // On mobile, close sidebar after selecting
   if (window.innerWidth <= 768) {
     sidebarEl.classList.add('collapsed');
     removeOverlay();
@@ -231,6 +252,7 @@ function handlePaste() {
   const name = 'Untitled Paste ' + formatDate(new Date().toISOString());
   const entry = addToHistory(name, content);
   activeId = entry.id;
+  editTextarea.value = content;
   renderMarkdown(content, name);
   updateActiveState();
   updateUrlForEntry(entry);
@@ -266,10 +288,8 @@ function formatDate(iso) {
 }
 
 // ===== Event Listeners =====
-// Theme
 themeSelect.addEventListener('change', (e) => setTheme(e.target.value));
 
-// Sidebar toggle
 sidebarToggle.addEventListener('click', () => {
   const isCollapsed = sidebarEl.classList.toggle('collapsed');
   if (!isCollapsed && window.innerWidth <= 768) {
@@ -279,16 +299,13 @@ sidebarToggle.addEventListener('click', () => {
   }
 });
 
-// New button
 newBtn.addEventListener('click', showInputView);
 
-// File input
 fileInput.addEventListener('change', (e) => {
   handleFile(e.target.files[0]);
   fileInput.value = '';
 });
 
-// Drag and drop
 dropZone.addEventListener('dragover', (e) => {
   e.preventDefault();
   dropZone.classList.add('dragover');
@@ -305,10 +322,8 @@ dropZone.addEventListener('drop', (e) => {
   if (file) handleFile(file);
 });
 
-// Render button
 renderBtn.addEventListener('click', handlePaste);
 
-// Ctrl+Enter to render
 markdownInput.addEventListener('keydown', (e) => {
   if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
     e.preventDefault();
@@ -316,15 +331,13 @@ markdownInput.addEventListener('keydown', (e) => {
   }
 });
 
-// Edit/Preview toggle
-// Live preview: update as you type
+// Live preview: update as you type in edit pane
 let debounceTimer;
 editTextarea.addEventListener('input', () => {
   clearTimeout(debounceTimer);
   debounceTimer = setTimeout(() => {
     const content = editTextarea.value;
     renderMarkdown(content, renderedTitle.textContent);
-    // Save to history
     const entry = history.find((e) => e.id === activeId);
     if (entry) {
       entry.content = content;
@@ -334,52 +347,22 @@ editTextarea.addEventListener('input', () => {
   }, 200);
 });
 
-// ===== URL Serialization =====
-function contentToHash(content) {
-  return '#md=' + compressToEncodedURIComponent(content);
-}
-
-function hashToContent() {
-  const hash = window.location.hash;
-  if (!hash.startsWith('#md=')) return null;
-  try {
-    return decompressFromEncodedURIComponent(hash.slice(4));
-  } catch {
-    return null;
-  }
-}
-
-function updateUrlForEntry(entry) {
-  if (!entry) return;
-  const newHash = contentToHash(entry.content);
-  history.length; // just to reference
-  window.history.replaceState(null, '', newHash);
-}
-
-function clearUrl() {
-  window.history.replaceState(null, '', window.location.pathname);
-}
-
-// Override showInputView to clear URL
-const _origShowInputView = showInputView;
-
 // ===== Init =====
 function handleIncomingUrl() {
   const content = hashToContent();
   if (!content) return false;
-  // Check if we already have this exact content in history
   let existing = history.find((e) => e.content === content);
   if (!existing) {
     const name = 'Shared ' + formatDate(new Date().toISOString());
     existing = addToHistory(name, content);
   }
   activeId = existing.id;
+  editTextarea.value = existing.content;
   renderMarkdown(existing.content, existing.name);
   updateActiveState();
   return true;
 }
 
-// Handle browser back/forward
 window.addEventListener('hashchange', () => {
   if (!handleIncomingUrl()) {
     showInputView();
@@ -387,5 +370,6 @@ window.addEventListener('hashchange', () => {
 });
 
 initTheme();
+loadHighlightTheme();
 renderHistoryList();
 handleIncomingUrl();
