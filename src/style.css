@@ -248,6 +248,7 @@ html, body {
   align-items: center;
   gap: 6px;
   padding: 6px 14px;
+  height: 34px;
   border: 1px solid var(--border-color);
   border-radius: 6px;
   font-size: 14px;
@@ -324,6 +325,7 @@ html, body {
 /* Theme select */
 .theme-select {
   padding: 5px 8px;
+  height: 34px;
   border-radius: 6px;
   border: 1px solid var(--border-color);
   background: var(--bg-primary);
