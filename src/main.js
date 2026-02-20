@@ -696,20 +696,27 @@ const qrCopyBtn = $('#qrCopyBtn');
 const qrCloseBtn = $('#qrCloseBtn');
 
 qrBtn.addEventListener('click', async () => {
-  await QRCode.toCanvas(qrCanvas, window.location.href, {
-    width: 280,
-    margin: 2,
-    color: { dark: '#000000', light: '#ffffff' },
-  });
-  qrModal.classList.remove('hidden');
-  // Auto-copy QR to clipboard
-  qrCanvas.toBlob((blob) => {
-    if (navigator.clipboard && typeof ClipboardItem !== 'undefined') {
-      navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => {
-        showToast('QR code copied as image!');
-      }).catch(() => {});
-    }
-  });
+  try {
+    const url = window.location.href;
+    // QR codes have a max capacity — if URL is too long, use a shorter version
+    const qrData = url.length > 2000 ? window.location.origin + window.location.pathname : url;
+    await QRCode.toCanvas(qrCanvas, qrData, {
+      width: 280,
+      margin: 2,
+      color: { dark: '#000000', light: '#ffffff' },
+    });
+    qrModal.classList.remove('hidden');
+    // Auto-copy QR to clipboard
+    qrCanvas.toBlob((blob) => {
+      if (blob && navigator.clipboard && typeof ClipboardItem !== 'undefined') {
+        navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => {
+          showToast('QR code copied as image!');
+        }).catch(() => {});
+      }
+    });
+  } catch (e) {
+    showToast('URL too long for QR code');
+  }
 });
 
 function copyQrImage() {
