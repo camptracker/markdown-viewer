@@ -11,7 +11,7 @@ function loadHighlightTheme() {
   if (existingLink) existingLink.remove();
 
   const theme = document.documentElement.getAttribute('data-theme');
-  const themeFile = theme === 'dark' ? 'github-dark' : 'github';
+  const themeFile = DARK_THEMES.includes(theme) ? 'github-dark' : 'github';
 
   const link = document.createElement('link');
   link.rel = 'stylesheet';
@@ -58,7 +58,7 @@ let activeId = null;
 const $ = (sel) => document.querySelector(sel);
 const sidebarEl = $('#sidebar');
 const sidebarToggle = $('#sidebarToggle');
-const themeToggle = $('#themeToggle');
+const themeSelect = $('#themeSelect');
 const newBtn = $('#newBtn');
 const historyList = $('#historyList');
 const sidebarEmpty = $('#sidebarEmpty');
@@ -68,7 +68,6 @@ const dropZone = $('#dropZone');
 const fileInput = $('#fileInput');
 const markdownInput = $('#markdownInput');
 const renderBtn = $('#renderBtn');
-const backBtn = $('#backBtn');
 const markdownOutput = $('#markdownOutput');
 const renderedTitle = $('#renderedTitle');
 const editToggle = $('#editToggle');
@@ -78,17 +77,19 @@ const editTextarea = $('#editTextarea');
 let isEditMode = false;
 
 // ===== Theme =====
+const THEMES = ['light', 'dark', 'dracula', 'monokai', 'one-dark', 'solarized', 'nord'];
+const DARK_THEMES = ['dark', 'dracula', 'monokai', 'one-dark', 'solarized', 'nord'];
+
 function initTheme() {
   const saved = localStorage.getItem(THEME_KEY);
-  const theme = saved || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
-  document.documentElement.setAttribute('data-theme', theme);
+  const theme = THEMES.includes(saved) ? saved : (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+  setTheme(theme);
 }
 
-function toggleTheme() {
-  const current = document.documentElement.getAttribute('data-theme');
-  const next = current === 'dark' ? 'light' : 'dark';
-  document.documentElement.setAttribute('data-theme', next);
-  localStorage.setItem(THEME_KEY, next);
+function setTheme(theme) {
+  document.documentElement.setAttribute('data-theme', theme);
+  localStorage.setItem(THEME_KEY, theme);
+  themeSelect.value = theme;
   loadHighlightTheme();
 }
 
@@ -279,7 +280,7 @@ function formatDate(iso) {
 
 // ===== Event Listeners =====
 // Theme
-themeToggle.addEventListener('click', toggleTheme);
+themeSelect.addEventListener('change', (e) => setTheme(e.target.value));
 
 // Sidebar toggle
 sidebarToggle.addEventListener('click', () => {
@@ -327,9 +328,6 @@ markdownInput.addEventListener('keydown', (e) => {
     handlePaste();
   }
 });
-
-// Back button
-backBtn.addEventListener('click', showInputView);
 
 // Edit/Preview toggle
 editToggle.addEventListener('click', () => {
