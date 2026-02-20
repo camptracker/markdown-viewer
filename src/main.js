@@ -367,6 +367,10 @@ function showEntry(id) {
   updateActiveState();
   updateUrlForEntry(entry);
 
+  // Scroll content to top
+  markdownOutput.scrollTop = 0;
+  renderedView.scrollTop = 0;
+
   if (window.innerWidth <= 768) {
     sidebarEl.classList.add('collapsed');
     removeOverlay();
