@@ -241,6 +241,7 @@ function renderMarkdown(content, title) {
   renderedTitle.textContent = title || 'Preview';
   inputView.classList.add('hidden');
   renderedView.classList.remove('hidden');
+  newBtn.classList.remove('hidden');
 
   markdownOutput.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
     cb.setAttribute('disabled', '');
@@ -263,6 +264,7 @@ function showInputView() {
   inputView.classList.remove('hidden');
   markdownInput.value = '';
   editTextarea.value = '';
+  newBtn.classList.add('hidden');
   updateActiveState();
   clearUrl();
 }
@@ -504,6 +506,8 @@ if (!handleIncomingUrl()) {
   const welcome = history.find(e => e.id === 'welcome');
   if (welcome && !activeId) {
     showEntry('welcome');
+  } else {
+    newBtn.classList.add('hidden');
   }
 }
 
