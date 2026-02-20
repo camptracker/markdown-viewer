@@ -6,7 +6,14 @@ test.beforeEach(async ({ page }) => {
   await page.goto(BASE);
   await page.evaluate(() => localStorage.clear());
   await page.reload();
+  // Welcome doc auto-shows; wait for it to load
+  await page.waitForSelector('#renderedView:not(.hidden)', { timeout: 3000 }).catch(() => {});
 });
+
+async function goToInput(page) {
+  await page.click('#newBtn');
+  await page.waitForSelector('#inputView:not(.hidden)', { timeout: 2000 });
+}
 
 test.describe('Theme', () => {
   test('default theme is light or dark based on preference', async ({ page }) => {
@@ -33,6 +40,7 @@ test.describe('Theme', () => {
 
 test.describe('Paste & Render', () => {
   test('pasting markdown and clicking render shows split pane', async ({ page }) => {
+    await page.click('#newBtn');
     await page.fill('#markdownInput', '# Hello World\n\nSome **bold** text.');
     await page.click('#renderBtn');
 
@@ -47,6 +55,7 @@ test.describe('Paste & Render', () => {
   });
 
   test('Ctrl+Enter renders markdown', async ({ page }) => {
+    await page.click('#newBtn');
     await page.fill('#markdownInput', '## Test');
     await page.press('#markdownInput', 'Meta+Enter');
 
@@ -56,6 +65,7 @@ test.describe('Paste & Render', () => {
   });
 
   test('empty paste does nothing', async ({ page }) => {
+    await page.click('#newBtn');
     await page.fill('#markdownInput', '');
     await page.click('#renderBtn');
     await expect(page.locator('#inputView')).not.toHaveClass(/hidden/);
@@ -64,6 +74,7 @@ test.describe('Paste & Render', () => {
 
 test.describe('Edit/Preview toggle', () => {
   test('default is preview mode', async ({ page }) => {
+    await goToInput(page);
     await page.fill('#markdownInput', '# Test');
     await page.click('#renderBtn');
 
@@ -73,6 +84,7 @@ test.describe('Edit/Preview toggle', () => {
   });
 
   test('clicking Edit shows textarea, clicking Preview renders', async ({ page }) => {
+    await goToInput(page);
     await page.fill('#markdownInput', '# Original');
     await page.click('#renderBtn');
 
@@ -92,6 +104,7 @@ test.describe('Edit/Preview toggle', () => {
   });
 
   test('edits are saved to history', async ({ page }) => {
+    await goToInput(page);
     await page.fill('#markdownInput', '# Save Test');
     await page.click('#renderBtn');
 
@@ -110,14 +123,17 @@ test.describe('Edit/Preview toggle', () => {
 
 test.describe('History', () => {
   test('rendered markdown is saved to history sidebar', async ({ page }) => {
+    await goToInput(page);
     await page.fill('#markdownInput', '# Doc 1');
     await page.click('#renderBtn');
 
-    const items = page.locator('.history-item');
-    await expect(items).toHaveCount(1);
+    // Should have the user doc in sidebar (plus the permanent welcome doc)
+    const userDoc = page.locator('.history-item-info', { hasText: 'Untitled Paste' });
+    await expect(userDoc).toBeVisible();
   });
 
   test('clicking history item loads it', async ({ page }) => {
+    await goToInput(page);
     await page.fill('#markdownInput', '# First');
     await page.click('#renderBtn');
 
@@ -135,24 +151,32 @@ test.describe('History', () => {
   });
 
   test('delete removes from history', async ({ page }) => {
+    await goToInput(page);
     await page.fill('#markdownInput', '# Delete Me');
     await page.click('#renderBtn');
 
-    await page.click('.history-item-delete');
-    await expect(page.locator('.history-item')).toHaveCount(0);
+    // Verify user doc exists then delete it
+    const deleteBtn = page.locator('.history-item', { hasText: 'Untitled Paste' }).locator('.history-item-delete');
+    await deleteBtn.click();
+    // User doc should be gone
+    await expect(page.locator('.history-item-info', { hasText: 'Untitled Paste' })).toHaveCount(0);
   });
 
   test('history persists after reload', async ({ page }) => {
+    await goToInput(page);
     await page.fill('#markdownInput', '# Persistent');
     await page.click('#renderBtn');
     await page.reload();
 
-    await expect(page.locator('.history-item')).toHaveCount(1);
+    // User doc persists (visible alongside welcome)
+    const userDoc = page.locator('.history-item-info', { hasText: 'Untitled Paste' });
+    await expect(userDoc).toBeVisible();
   });
 });
 
 test.describe('New button', () => {
   test('returns to input view', async ({ page }) => {
+    await goToInput(page);
     await page.fill('#markdownInput', '# Test');
     await page.click('#renderBtn');
 
@@ -164,6 +188,7 @@ test.describe('New button', () => {
 
 test.describe('URL serialization', () => {
   test('rendering sets hash in URL', async ({ page }) => {
+    await goToInput(page);
     await page.fill('#markdownInput', '# URL Test');
     await page.click('#renderBtn');
 
@@ -173,6 +198,7 @@ test.describe('URL serialization', () => {
 
   test('visiting URL with hash loads content', async ({ page }) => {
     // First create a hash
+    await goToInput(page);
     await page.fill('#markdownInput', '# Shared Doc');
     await page.click('#renderBtn');
     const url = page.url();
@@ -187,6 +213,7 @@ test.describe('URL serialization', () => {
   });
 
   test('editing updates URL hash on preview switch', async ({ page }) => {
+    await goToInput(page);
     await page.fill('#markdownInput', '# Before');
     await page.click('#renderBtn');
     const urlBefore = page.url();
@@ -200,6 +227,7 @@ test.describe('URL serialization', () => {
   });
 
   test('new button clears URL hash', async ({ page }) => {
+    await goToInput(page);
     await page.fill('#markdownInput', '# Test');
     await page.click('#renderBtn');
     expect(page.url()).toContain('#md=');
@@ -209,8 +237,41 @@ test.describe('URL serialization', () => {
   });
 });
 
+test.describe('Welcome doc', () => {
+  test('welcome doc is always visible in sidebar', async ({ page }) => {
+    const welcomeItem = page.locator('.history-item-info', { hasText: 'Welcome to Markdown Viewer' });
+    await expect(welcomeItem).toBeVisible();
+  });
+
+  test('welcome doc has no delete button', async ({ page }) => {
+    const welcomeRow = page.locator('.history-item', { hasText: 'Welcome to Markdown Viewer' });
+    await expect(welcomeRow.locator('.history-item-delete')).toHaveCount(0);
+  });
+
+  test('clicking welcome doc renders it', async ({ page }) => {
+    const welcomeItem = page.locator('.history-item-info', { hasText: 'Welcome to Markdown Viewer' });
+    await welcomeItem.click();
+    const html = await page.locator('#markdownOutput').innerHTML();
+    expect(html).toContain('Markdown Viewer');
+    expect(html).toContain('Features');
+  });
+
+  test('welcome doc persists even after clearing history', async ({ page }) => {
+    // Add a doc then delete it
+    await page.click('#newBtn');
+    await page.fill('#markdownInput', '# Temp');
+    await page.click('#renderBtn');
+    await page.click('.history-item-delete');
+
+    // Welcome should still be there
+    const welcomeItem = page.locator('.history-item-info', { hasText: 'Welcome to Markdown Viewer' });
+    await expect(welcomeItem).toBeVisible();
+  });
+});
+
 test.describe('GFM features', () => {
   test('renders tables', async ({ page }) => {
+    await goToInput(page);
     await page.fill('#markdownInput', '| Col A | Col B |\n|---|---|\n| 1 | 2 |');
     await page.click('#renderBtn');
     const html = await page.locator('#markdownOutput').innerHTML();
@@ -218,6 +279,7 @@ test.describe('GFM features', () => {
   });
 
   test('renders task lists', async ({ page }) => {
+    await goToInput(page);
     await page.fill('#markdownInput', '- [x] Done\n- [ ] Todo');
     await page.click('#renderBtn');
     const html = await page.locator('#markdownOutput').innerHTML();
@@ -225,6 +287,7 @@ test.describe('GFM features', () => {
   });
 
   test('renders code blocks with syntax highlighting', async ({ page }) => {
+    await goToInput(page);
     await page.fill('#markdownInput', '```js\nconst x = 1;\n```');
     await page.click('#renderBtn');
     const html = await page.locator('#markdownOutput').innerHTML();

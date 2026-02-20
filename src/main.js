@@ -159,20 +159,17 @@ Pick your vibe from the dropdown in the top bar:
 `;
 
 // ===== History (localStorage) =====
+const WELCOME_ENTRY = {
+  id: 'welcome',
+  name: '📝 Welcome to Markdown Viewer',
+  content: WELCOME_MD,
+  date: '2026-01-01T00:00:00.000Z',
+  permanent: true,
+};
+
 function loadHistory() {
   try {
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
-    // Ensure welcome doc exists (at the end so it doesn't clutter top)
-    if (!stored.find(e => e.id === 'welcome')) {
-      stored.push({
-        id: 'welcome',
-        name: 'Welcome to Markdown Viewer',
-        content: WELCOME_MD,
-        date: new Date().toISOString(),
-      });
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
-    }
-    return stored;
+    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
   } catch {
     return [];
   }
@@ -270,7 +267,7 @@ function showInputView() {
 }
 
 function showEntry(id) {
-  const entry = history.find((e) => e.id === id);
+  const entry = findEntry(id);
   if (!entry) return;
   activeId = id;
   resetEditMode();
@@ -286,34 +283,45 @@ function showEntry(id) {
 }
 
 // ===== History List Rendering =====
+function findEntry(id) {
+  if (id === 'welcome') return WELCOME_ENTRY;
+  return history.find((e) => e.id === id);
+}
+
 function renderHistoryList() {
   historyList.innerHTML = '';
 
-  if (history.length === 0) {
-    sidebarEmpty.classList.remove('hidden');
-    return;
-  }
+  const allEntries = [...history, WELCOME_ENTRY];
+
   sidebarEmpty.classList.add('hidden');
 
-  history.forEach((entry) => {
+  allEntries.forEach((entry) => {
     const li = document.createElement('li');
     li.className = 'history-item' + (entry.id === activeId ? ' active' : '');
-    li.innerHTML = `
-      <div class="history-item-info">
-        <div class="history-item-name">${escapeHtml(entry.name)}</div>
-        <div class="history-item-date">${formatDate(entry.date)}</div>
-      </div>
-      <button class="history-item-delete" aria-label="Delete" data-id="${entry.id}">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
-      </button>
-    `;
+
+    if (entry.permanent) {
+      li.innerHTML = `
+        <div class="history-item-info">
+          <div class="history-item-name">${escapeHtml(entry.name)}</div>
+        </div>
+      `;
+    } else {
+      li.innerHTML = `
+        <div class="history-item-info">
+          <div class="history-item-name">${escapeHtml(entry.name)}</div>
+          <div class="history-item-date">${formatDate(entry.date)}</div>
+        </div>
+        <button class="history-item-delete" aria-label="Delete" data-id="${entry.id}">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18"/><path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/><path d="M19 6l-1 14a2 2 0 01-2 2H8a2 2 0 01-2-2L5 6"/></svg>
+        </button>
+      `;
+      li.querySelector('.history-item-delete').addEventListener('click', (e) => {
+        e.stopPropagation();
+        deleteFromHistory(entry.id);
+      });
+    }
 
     li.querySelector('.history-item-info').addEventListener('click', () => showEntry(entry.id));
-    li.querySelector('.history-item-delete').addEventListener('click', (e) => {
-      e.stopPropagation();
-      deleteFromHistory(entry.id);
-    });
-
     historyList.appendChild(li);
   });
 }
@@ -449,7 +457,7 @@ alignRight.addEventListener('click', () => setAlign('right'));
 editToggle.addEventListener('click', () => {
   if (isEditMode) return;
   isEditMode = true;
-  const entry = history.find((e) => e.id === activeId);
+  const entry = findEntry(activeId);
   if (entry) editTextarea.value = entry.content;
   markdownOutput.classList.add('hidden');
   editArea.classList.remove('hidden');
@@ -461,8 +469,8 @@ editToggle.addEventListener('click', () => {
 previewToggle.addEventListener('click', () => {
   if (!isEditMode) return;
   isEditMode = false;
-  const entry = history.find((e) => e.id === activeId);
-  if (entry) {
+  const entry = findEntry(activeId);
+  if (entry && !entry.permanent) {
     entry.content = editTextarea.value;
     saveHistory();
     updateUrlForEntry(entry);
@@ -502,12 +510,9 @@ loadHighlightTheme();
 renderHistoryList();
 
 if (!handleIncomingUrl()) {
-  // Auto-show welcome doc if it exists and nothing else is active
-  const welcome = history.find(e => e.id === 'welcome');
-  if (welcome && !activeId) {
+  // Auto-show welcome doc on first visit
+  if (!activeId) {
     showEntry('welcome');
-  } else {
-    newBtn.classList.add('hidden');
   }
 }
 
