@@ -333,14 +333,22 @@ function hashToContent() {
   }
 }
 
-function updateUrlForEntry(entry) {
+function updateUrlForEntry(entry, push = false) {
   if (!entry) return;
   const newHash = contentToHash(entry.content, entry.name);
-  window.history.replaceState(null, '', newHash);
+  if (push) {
+    window.history.pushState({ entryId: entry.id }, '', newHash);
+  } else {
+    window.history.replaceState({ entryId: entry.id }, '', newHash);
+  }
 }
 
-function clearUrl() {
-  window.history.replaceState(null, '', window.location.pathname);
+function clearUrl(push = false) {
+  if (push) {
+    window.history.pushState({ home: true }, '', window.location.pathname);
+  } else {
+    window.history.replaceState({ home: true }, '', window.location.pathname);
+  }
 }
 
 // ===== Meta Tags =====
@@ -456,7 +464,7 @@ function showInputView() {
   inputPreviewToggle.classList.remove('active');
   newBtn.classList.add('hidden');
   updateActiveState();
-  clearUrl();
+  clearUrl(true);
   updateMetaTags(null, null);
 }
 
@@ -468,7 +476,7 @@ function showEntry(id) {
   editTextarea.value = entry.content;
   renderMarkdown(entry.content, entry.name);
   updateActiveState();
-  updateUrlForEntry(entry);
+  updateUrlForEntry(entry, true);
 
   // Scroll content to top
   if (mainContent) mainContent.scrollTop = 0;
@@ -586,7 +594,7 @@ function handleFile(file) {
     activeId = entry.id;
     renderMarkdown(content, file.name);
     updateActiveState();
-    updateUrlForEntry(entry);
+    updateUrlForEntry(entry, true);
   };
   reader.readAsText(file);
 }
@@ -601,7 +609,7 @@ function handlePaste() {
   editTextarea.value = content;
   renderMarkdown(content, name);
   updateActiveState();
-  updateUrlForEntry(entry);
+  updateUrlForEntry(entry, true);
 }
 
 // ===== Sidebar Mobile Overlay =====
@@ -788,11 +796,57 @@ function handleIncomingUrl() {
   return true;
 }
 
-window.addEventListener('hashchange', () => {
-  if (!handleIncomingUrl()) {
-    showInputView();
+// Handle back/forward navigation
+window.addEventListener('popstate', () => {
+  if (!handleIncomingUrlSilent()) {
+    showInputViewSilent();
   }
 });
+
+// Silent versions that don't push to history
+function handleIncomingUrlSilent() {
+  const result = hashToContent();
+  if (!result || !result.content) return false;
+  const { content, title } = result;
+  if (content === WELCOME_MD) {
+    activeId = 'welcome';
+    editTextarea.value = WELCOME_ENTRY.content;
+    renderMarkdown(WELCOME_ENTRY.content, WELCOME_ENTRY.name);
+    updateActiveState();
+    return true;
+  }
+  let existing = history.find((e) => e.content === content);
+  if (!existing) {
+    const name = title || 'Shared ' + formatDate(new Date().toISOString());
+    existing = addToHistory(name, content);
+  } else if (title && existing.name !== title) {
+    existing.name = title;
+    saveHistory();
+    renderHistoryList();
+  }
+  activeId = existing.id;
+  editTextarea.value = existing.content;
+  renderMarkdown(existing.content, existing.name);
+  updateActiveState();
+  if (mainContent) mainContent.scrollTop = 0;
+  return true;
+}
+
+function showInputViewSilent() {
+  activeId = null;
+  resetEditMode();
+  renderedView.classList.add('hidden');
+  inputView.classList.remove('hidden');
+  setCmContent('');
+  editTextarea.value = '';
+  inputEditor.classList.remove('hidden');
+  inputPreview.classList.add('hidden');
+  inputEditToggle.classList.add('active');
+  inputPreviewToggle.classList.remove('active');
+  newBtn.classList.add('hidden');
+  updateActiveState();
+  updateMetaTags(null, null);
+}
 
 initTheme();
 initAlign();
