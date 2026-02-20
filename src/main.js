@@ -8,6 +8,7 @@ import { EditorView, basicSetup } from 'codemirror';
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
 import { languages } from '@codemirror/language-data';
 import { EditorState } from '@codemirror/state';
+import { placeholder } from '@codemirror/view';
 import { oneDark } from '@codemirror/theme-one-dark';
 
 // Expose for e2e testing
@@ -139,11 +140,15 @@ function initCodeMirror() {
     markdown({ base: markdownLanguage, codeLanguages: languages }),
     EditorView.lineWrapping,
     EditorView.theme({
-      '&': { height: '100%', fontSize: '14px' },
+      '&': { fontSize: '14px' },
+      '&.cm-focused': { outline: 'none' },
       '.cm-scroller': { overflow: 'auto' },
-      '.cm-content': { fontFamily: "'SF Mono', 'Fira Code', 'Cascadia Code', monospace", padding: '16px 0' },
+      '.cm-content': { fontFamily: "'SF Mono', 'Fira Code', 'Cascadia Code', monospace", padding: '16px', minHeight: '200px' },
       '.cm-gutters': { display: 'none' },
     }),
+    EditorView.contentAttributes.of({ 'aria-label': 'Markdown editor' }),
+    EditorState.tabSize.of(2),
+    placeholder('Type your markdown here...'),
   ];
 
   if (isDark) extensions.push(oneDark);

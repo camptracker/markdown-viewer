@@ -659,15 +659,30 @@ html, body {
   overflow: hidden;
   display: flex;
   flex-direction: column;
+  padding: 20px 24px;
 }
 
 .input-editor .cm-editor {
-  height: 100%;
-  background: var(--bg-primary);
+  flex: 1;
+  background: var(--input-bg);
+  border: 1px solid var(--border-color);
+  border-radius: 10px;
+  overflow: hidden;
+  transition: border-color 0.15s;
+}
+
+.input-editor .cm-editor.cm-focused {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px var(--accent-subtle);
 }
 
 .input-editor .cm-editor .cm-scroller {
-  padding: 0 16px;
+  overflow: auto;
+}
+
+.input-editor .cm-editor .cm-placeholder {
+  color: var(--text-muted);
+  font-style: italic;
 }
 
 .input-editor.hidden {
