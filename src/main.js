@@ -461,6 +461,11 @@ function renderHistoryList() {
     });
     historyList.appendChild(li);
   });
+
+  // Re-attach TOC for active item if headings exist
+  if (activeId && tocEntries.length > 1) {
+    buildToc();
+  }
 }
 
 function updateActiveState() {
