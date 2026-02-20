@@ -86,9 +86,6 @@ const alignLeft = $('#alignLeft');
 const alignCenter = $('#alignCenter');
 const alignRight = $('#alignRight');
 const downloadBtn = $('#downloadBtn');
-const tocContainer = $('#tocContainer');
-const tocToggle = $('#tocToggle');
-const tocList = $('#tocList');
 let isEditMode = false;
 const ALIGN_KEY = 'md-viewer-align';
 
@@ -304,15 +301,16 @@ function renderMarkdown(content, title) {
 }
 
 function buildToc() {
-  tocList.innerHTML = '';
-  tocList.classList.add('hidden');
-  tocToggle?.querySelector('.toc-chevron')?.classList.remove('open');
+  // Remove any existing TOCs in sidebar
+  document.querySelectorAll('.sidebar-toc').forEach(el => el.remove());
 
-  if (tocEntries.length <= 1) {
-    tocContainer.classList.add('hidden');
-    return;
-  }
-  tocContainer.classList.remove('hidden');
+  if (tocEntries.length <= 1 || !activeId) return;
+
+  const activeItem = historyList.querySelector(`.history-item[data-entry-id="${activeId}"]`);
+  if (!activeItem) return;
+
+  const tocNav = document.createElement('nav');
+  tocNav.className = 'sidebar-toc';
 
   const minDepth = Math.min(...tocEntries.map(e => e.depth));
   tocEntries.forEach(({ text, depth, slug }) => {
@@ -326,9 +324,16 @@ function buildToc() {
       if (target) {
         target.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }
+      // Close sidebar on mobile after clicking
+      if (window.innerWidth <= 768) {
+        sidebarEl.classList.add('collapsed');
+        removeOverlay();
+      }
     });
-    tocList.appendChild(a);
+    tocNav.appendChild(a);
   });
+
+  activeItem.appendChild(tocNav);
 }
 
 // ===== Views =====
@@ -573,12 +578,6 @@ function initAlign() {
 alignLeft.addEventListener('click', () => setAlign('left'));
 alignCenter.addEventListener('click', () => setAlign('center'));
 alignRight.addEventListener('click', () => setAlign('right'));
-
-// TOC toggle
-tocToggle.addEventListener('click', () => {
-  const isHidden = tocList.classList.toggle('hidden');
-  tocToggle.querySelector('.toc-chevron').classList.toggle('open', !isHidden);
-});
 
 // Download button
 downloadBtn.addEventListener('click', () => {
