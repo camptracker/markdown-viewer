@@ -340,6 +340,8 @@ html, body {
   flex-direction: column;
   overflow: hidden;
   transition: margin-left 0.25s ease, opacity 0.25s ease;
+  height: 100%;
+  max-height: calc(100vh - var(--topbar-height));
 }
 
 .sidebar.collapsed {
