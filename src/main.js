@@ -513,6 +513,14 @@ previewToggle.addEventListener('click', () => {
 function handleIncomingUrl() {
   const content = hashToContent();
   if (!content) return false;
+  // Check if it matches the welcome doc
+  if (content === WELCOME_MD) {
+    activeId = 'welcome';
+    editTextarea.value = WELCOME_ENTRY.content;
+    renderMarkdown(WELCOME_ENTRY.content, WELCOME_ENTRY.name);
+    updateActiveState();
+    return true;
+  }
   let existing = history.find((e) => e.content === content);
   if (!existing) {
     const name = 'Shared ' + formatDate(new Date().toISOString());
