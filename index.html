@@ -58,21 +58,35 @@
       <main class="main-content" id="mainContent">
         <!-- Input View -->
         <div class="input-view" id="inputView">
-          <div class="drop-zone" id="dropZone">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
-            <p>Drag & drop a <strong>.md</strong> file here</p>
-            <span>or</span>
-            <label class="btn btn-secondary file-label">
-              Choose File
-              <input type="file" id="fileInput" accept=".md,.markdown,.txt" hidden />
-            </label>
+          <div class="input-toolbar">
+            <div class="input-toolbar-left">
+              <label class="btn btn-secondary file-label">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                Upload
+                <input type="file" id="fileInput" accept=".md,.markdown,.txt" hidden />
+              </label>
+            </div>
+            <div class="input-toolbar-center">
+              <div class="edit-preview-toggle">
+                <button class="toggle-btn active" id="inputEditToggle">Edit</button>
+                <button class="toggle-btn" id="inputPreviewToggle">Preview</button>
+              </div>
+            </div>
+            <div class="input-toolbar-right">
+              <button class="btn btn-primary" id="renderBtn">Save</button>
+            </div>
           </div>
-
-          <div class="divider"><span>or paste markdown below</span></div>
-
-          <div class="paste-area">
-            <textarea id="markdownInput" placeholder="Paste your markdown here..."></textarea>
-            <button class="btn btn-primary render-btn" id="renderBtn">Render</button>
+          <div class="input-editor" id="inputEditor">
+            <div id="codemirrorHost"></div>
+          </div>
+          <div class="input-preview hidden" id="inputPreview">
+            <article class="markdown-body" id="inputPreviewOutput"></article>
+          </div>
+          <div class="drop-overlay hidden" id="dropOverlay">
+            <div class="drop-overlay-content">
+              <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              <p>Drop your <strong>.md</strong> file</p>
+            </div>
           </div>
         </div>
 

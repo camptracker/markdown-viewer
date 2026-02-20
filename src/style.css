@@ -612,104 +612,104 @@ html, body {
 
 /* ===== Input View ===== */
 .input-view {
-  max-width: 720px;
   width: 100%;
-  margin: 0 auto;
-  padding: 40px 24px;
+  height: 100%;
   display: flex;
   flex-direction: column;
-  gap: 24px;
+  position: relative;
+  overflow: hidden;
 }
 
 .input-view.hidden {
   display: none;
 }
 
-/* Drop Zone */
-.drop-zone {
-  border: 2px dashed var(--drop-zone-border);
-  border-radius: 12px;
-  padding: 48px 24px;
-  text-align: center;
-  background: var(--drop-zone-bg);
-  transition: all 0.2s;
+/* Input Toolbar */
+.input-toolbar {
   display: flex;
-  flex-direction: column;
   align-items: center;
-  gap: 12px;
-  color: var(--text-secondary);
+  justify-content: space-between;
+  padding: 8px 16px;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+  flex-shrink: 0;
+  height: 54px;
+  box-sizing: border-box;
 }
 
-.drop-zone.dragover {
-  border-color: var(--drop-zone-active-border);
-  background: var(--drop-zone-active-bg);
+.input-toolbar-left,
+.input-toolbar-right {
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.drop-zone svg {
-  color: var(--text-muted);
-}
-
-.drop-zone p {
-  font-size: 16px;
-}
-
-.drop-zone span {
-  font-size: 13px;
-  color: var(--text-muted);
+.input-toolbar-center {
+  display: flex;
+  align-items: center;
 }
 
 .file-label {
   cursor: pointer;
 }
 
-/* Divider */
-.divider {
-  display: flex;
-  align-items: center;
-  gap: 16px;
-  color: var(--text-muted);
-  font-size: 13px;
-}
-
-.divider::before,
-.divider::after {
-  content: "";
+/* Input Editor (CodeMirror) */
+.input-editor {
   flex: 1;
-  height: 1px;
-  background: var(--border-color);
-}
-
-/* Paste Area */
-.paste-area {
+  overflow: hidden;
   display: flex;
   flex-direction: column;
+}
+
+.input-editor .cm-editor {
+  height: 100%;
+  background: var(--bg-primary);
+}
+
+.input-editor .cm-editor .cm-scroller {
+  padding: 0 16px;
+}
+
+.input-editor.hidden {
+  display: none;
+}
+
+/* Input Preview */
+.input-preview {
+  flex: 1;
+  overflow-y: auto;
+  padding: 24px;
+}
+
+.input-preview.hidden {
+  display: none;
+}
+
+/* Drop Overlay */
+.drop-overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.drop-overlay.hidden {
+  display: none;
+}
+
+.drop-overlay-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
   gap: 12px;
-}
-
-textarea#markdownInput {
-  width: 100%;
-  min-height: 200px;
-  padding: 12px 16px;
-  border: 1px solid var(--border-color);
-  border-radius: 8px;
-  background: var(--input-bg);
-  color: var(--text-primary);
-  font-family: "SF Mono", "Monaco", "Menlo", "Consolas", monospace;
-  font-size: 14px;
-  line-height: 1.6;
-  resize: vertical;
-  transition: border-color 0.15s;
-}
-
-textarea#markdownInput:focus {
-  outline: none;
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px rgba(9, 105, 218, 0.15);
-}
-
-.render-btn {
-  align-self: flex-end;
-  padding: 8px 24px;
+  padding: 40px;
+  border: 2px dashed var(--accent);
+  border-radius: 16px;
+  background: var(--bg-secondary);
+  color: var(--text-secondary);
 }
 
 /* ===== Rendered View ===== */

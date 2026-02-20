@@ -2,6 +2,19 @@ import { test, expect } from '@playwright/test';
 
 const BASE = 'http://localhost:4173';
 
+async function typeInEditor(page, text) {
+  // Set content in CodeMirror via the exposed API
+  await page.evaluate((t) => {
+    const cmView = document.querySelector('.cm-editor')?.cmView?.view
+      || document.querySelector('#codemirrorHost .cm-editor')?.__view;
+    // Fallback: dispatch through the CM instance on window
+    if (window.__cmEditor) {
+      const cm = window.__cmEditor;
+      cm.dispatch({ changes: { from: 0, to: cm.state.doc.length, insert: t } });
+    }
+  }, text);
+}
+
 test.beforeEach(async ({ page }) => {
   await page.goto(BASE);
   await page.evaluate(() => localStorage.clear());
@@ -35,7 +48,7 @@ test.describe('Theme', () => {
 
 test.describe('Paste & Render', () => {
   test('pasting markdown and clicking render shows split pane', async ({ page }) => {
-    await page.fill('#markdownInput', '# Hello World\n\nSome **bold** text.');
+    await typeInEditor(page, '# Hello World\n\nSome **bold** text.');
     await page.click('#renderBtn');
 
     await expect(page.locator('#inputView')).toHaveClass(/hidden/);
@@ -46,17 +59,7 @@ test.describe('Paste & Render', () => {
     expect(html).toContain('<strong>bold</strong>');
   });
 
-  test('Ctrl+Enter renders markdown', async ({ page }) => {
-    await page.fill('#markdownInput', '## Test');
-    await page.press('#markdownInput', 'Meta+Enter');
-
-    await expect(page.locator('#renderedView')).not.toHaveClass(/hidden/);
-    const html = await page.locator('#markdownOutput').innerHTML();
-    expect(html).toContain('Test');
-  });
-
-  test('empty paste does nothing', async ({ page }) => {
-    await page.fill('#markdownInput', '');
+  test('empty content does nothing on save', async ({ page }) => {
     await page.click('#renderBtn');
     await expect(page.locator('#inputView')).not.toHaveClass(/hidden/);
   });
@@ -64,7 +67,7 @@ test.describe('Paste & Render', () => {
 
 test.describe('Edit/Preview toggle', () => {
   test('default is preview mode', async ({ page }) => {
-    await page.fill('#markdownInput', '# Test');
+    await typeInEditor(page, '# Test');
     await page.click('#renderBtn');
 
     await expect(page.locator('#markdownOutput')).not.toHaveClass(/hidden/);
@@ -73,7 +76,7 @@ test.describe('Edit/Preview toggle', () => {
   });
 
   test('clicking Edit shows textarea, clicking Preview renders', async ({ page }) => {
-    await page.fill('#markdownInput', '# Original');
+    await typeInEditor(page, '# Original');
     await page.click('#renderBtn');
 
     await page.click('#editToggle');
@@ -90,7 +93,7 @@ test.describe('Edit/Preview toggle', () => {
   });
 
   test('edits are saved to history', async ({ page }) => {
-    await page.fill('#markdownInput', '# Save Test');
+    await typeInEditor(page, '# Save Test');
     await page.click('#renderBtn');
 
     await page.click('#editToggle');
@@ -107,7 +110,7 @@ test.describe('Edit/Preview toggle', () => {
 
 test.describe('History', () => {
   test('rendered markdown is saved to history sidebar', async ({ page }) => {
-    await page.fill('#markdownInput', '# Doc 1');
+    await typeInEditor(page, '# Doc 1');
     await page.click('#renderBtn');
 
     const userDoc = page.locator('.history-item-info', { hasText: 'Doc 1' });
@@ -115,11 +118,11 @@ test.describe('History', () => {
   });
 
   test('clicking history item loads it', async ({ page }) => {
-    await page.fill('#markdownInput', '# First');
+    await typeInEditor(page, '# First');
     await page.click('#renderBtn');
 
     await page.click('#newBtn');
-    await page.fill('#markdownInput', '# Second');
+    await typeInEditor(page, '# Second');
     await page.click('#renderBtn');
 
     const items = page.locator('.history-item-info');
@@ -130,7 +133,7 @@ test.describe('History', () => {
   });
 
   test('delete removes from history', async ({ page }) => {
-    await page.fill('#markdownInput', '# Delete Me');
+    await typeInEditor(page, '# Delete Me');
     await page.click('#renderBtn');
 
     const deleteBtn = page.locator('.history-item', { hasText: 'Delete Me' }).locator('.history-item-delete');
@@ -140,7 +143,7 @@ test.describe('History', () => {
   });
 
   test('history persists after reload', async ({ page }) => {
-    await page.fill('#markdownInput', '# Persistent');
+    await typeInEditor(page, '# Persistent');
     await page.click('#renderBtn');
     await page.reload();
 
@@ -151,7 +154,7 @@ test.describe('History', () => {
 
 test.describe('New button', () => {
   test('returns to input view', async ({ page }) => {
-    await page.fill('#markdownInput', '# Test');
+    await typeInEditor(page, '# Test');
     await page.click('#renderBtn');
 
     await page.click('#newBtn');
@@ -162,7 +165,7 @@ test.describe('New button', () => {
 
 test.describe('URL serialization', () => {
   test('rendering sets hash in URL', async ({ page }) => {
-    await page.fill('#markdownInput', '# URL Test');
+    await typeInEditor(page, '# URL Test');
     await page.click('#renderBtn');
 
     const url = page.url();
@@ -170,7 +173,7 @@ test.describe('URL serialization', () => {
   });
 
   test('visiting URL with hash loads content', async ({ page }) => {
-    await page.fill('#markdownInput', '# Shared Doc');
+    await typeInEditor(page, '# Shared Doc');
     await page.click('#renderBtn');
     const url = page.url();
 
@@ -183,7 +186,7 @@ test.describe('URL serialization', () => {
   });
 
   test('editing updates URL hash on preview switch', async ({ page }) => {
-    await page.fill('#markdownInput', '# Before');
+    await typeInEditor(page, '# Before');
     await page.click('#renderBtn');
     const urlBefore = page.url();
 
@@ -196,7 +199,7 @@ test.describe('URL serialization', () => {
   });
 
   test('new button clears URL hash', async ({ page }) => {
-    await page.fill('#markdownInput', '# Test');
+    await typeInEditor(page, '# Test');
     await page.click('#renderBtn');
     expect(page.url()).toMatch(/#mdt?=/);
 
@@ -224,7 +227,7 @@ test.describe('Welcome doc', () => {
   });
 
   test('welcome doc persists even after clearing history', async ({ page }) => {
-    await page.fill('#markdownInput', '# Temp');
+    await typeInEditor(page, '# Temp');
     await page.click('#renderBtn');
     const deleteBtn = page.locator('.history-item', { hasText: 'Temp' }).locator('.history-item-delete');
     await deleteBtn.click();
@@ -237,21 +240,21 @@ test.describe('Welcome doc', () => {
 
 test.describe('GFM features', () => {
   test('renders tables', async ({ page }) => {
-    await page.fill('#markdownInput', '| Col A | Col B |\n|---|---|\n| 1 | 2 |');
+    await typeInEditor(page, '| Col A | Col B |\n|---|---|\n| 1 | 2 |');
     await page.click('#renderBtn');
     const html = await page.locator('#markdownOutput').innerHTML();
     expect(html).toContain('<table>');
   });
 
   test('renders task lists', async ({ page }) => {
-    await page.fill('#markdownInput', '- [x] Done\n- [ ] Todo');
+    await typeInEditor(page, '- [x] Done\n- [ ] Todo');
     await page.click('#renderBtn');
     const html = await page.locator('#markdownOutput').innerHTML();
     expect(html).toContain('type="checkbox"');
   });
 
   test('renders code blocks with syntax highlighting', async ({ page }) => {
-    await page.fill('#markdownInput', '```js\nconst x = 1;\n```');
+    await typeInEditor(page, '```js\nconst x = 1;\n```');
     await page.click('#renderBtn');
     const html = await page.locator('#markdownOutput').innerHTML();
     expect(html).toContain('<code');
@@ -260,7 +263,7 @@ test.describe('GFM features', () => {
 
 test.describe('localStorage persistence', () => {
   test('history entries survive page reload', async ({ page }) => {
-    await page.fill('#markdownInput', '# Persist Test');
+    await typeInEditor(page, '# Persist Test');
     await page.click('#renderBtn');
 
     const count = await page.evaluate(() => {
@@ -280,10 +283,10 @@ test.describe('localStorage persistence', () => {
   });
 
   test('multiple history entries persist and load correctly', async ({ page }) => {
-    await page.fill('#markdownInput', '# Doc Alpha');
+    await typeInEditor(page, '# Doc Alpha');
     await page.click('#renderBtn');
     await page.click('#newBtn');
-    await page.fill('#markdownInput', '# Doc Beta');
+    await typeInEditor(page, '# Doc Beta');
     await page.click('#renderBtn');
 
     await page.reload();
@@ -302,7 +305,7 @@ test.describe('localStorage persistence', () => {
   });
 
   test('edited content persists after reload', async ({ page }) => {
-    await page.fill('#markdownInput', '# Original');
+    await typeInEditor(page, '# Original');
     await page.click('#renderBtn');
 
     await page.click('#editToggle');
@@ -317,7 +320,7 @@ test.describe('localStorage persistence', () => {
   });
 
   test('renamed title persists after reload', async ({ page }) => {
-    await page.fill('#markdownInput', '# Test');
+    await typeInEditor(page, '# Test');
     await page.click('#renderBtn');
 
     await page.click('.history-item-rename');
@@ -330,7 +333,7 @@ test.describe('localStorage persistence', () => {
   });
 
   test('localStorage is not corrupted by special characters', async ({ page }) => {
-    await page.fill('#markdownInput', '# Test with "quotes" & <tags> & émojis 🎉');
+    await typeInEditor(page, '# Test with "quotes" & <tags> & émojis 🎉');
     await page.click('#renderBtn');
 
     await page.reload();
@@ -342,7 +345,7 @@ test.describe('localStorage persistence', () => {
 
 test.describe('URL title serialization', () => {
   test('URL includes title after rename', async ({ page }) => {
-    await page.fill('#markdownInput', '# Test');
+    await typeInEditor(page, '# Test');
     await page.click('#renderBtn');
 
     await page.click('.history-item-rename');
@@ -354,7 +357,7 @@ test.describe('URL title serialization', () => {
   });
 
   test('opening URL with title shows correct title', async ({ page }) => {
-    await page.fill('#markdownInput', '# Hello Title');
+    await typeInEditor(page, '# Hello Title');
     await page.click('#renderBtn');
 
     await page.click('.history-item-rename');

@@ -4,6 +4,11 @@ import hljs from 'highlight.js';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
+import { EditorView, basicSetup } from 'codemirror';
+import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
+import { languages } from '@codemirror/language-data';
+import { EditorState } from '@codemirror/state';
+import { oneDark } from '@codemirror/theme-one-dark';
 
 // Expose for e2e testing
 window.__lzCompress = compressToEncodedURIComponent;
@@ -72,11 +77,16 @@ const historyList = $('#historyList');
 const sidebarEmpty = $('#sidebarEmpty');
 const inputView = $('#inputView');
 const renderedView = $('#renderedView');
-const dropZone = $('#dropZone');
 const fileInput = $('#fileInput');
-const markdownInput = $('#markdownInput');
 const renderBtn = $('#renderBtn');
 const markdownOutput = $('#markdownOutput');
+const inputEditor = $('#inputEditor');
+const codemirrorHost = $('#codemirrorHost');
+const inputPreview = $('#inputPreview');
+const inputPreviewOutput = $('#inputPreviewOutput');
+const inputEditToggle = $('#inputEditToggle');
+const inputPreviewToggle = $('#inputPreviewToggle');
+const dropOverlay = $('#dropOverlay');
 let currentTitle = 'Preview';
 const editTextarea = $('#editTextarea');
 const editToggle = $('#editToggle');
@@ -101,6 +111,61 @@ function setTheme(theme) {
   localStorage.setItem(THEME_KEY, theme);
   if (themeSelect) themeSelect.value = theme;
   loadHighlightTheme();
+  // Rebuild CodeMirror with new theme
+  if (cmEditor) {
+    const content = getCmContent();
+    initCodeMirror();
+    setCmContent(content);
+  }
+}
+
+// ===== CodeMirror Editor =====
+function createEditorTheme() {
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const isDark = DARK_THEMES.includes(currentTheme);
+  return isDark ? oneDark : EditorView.theme({});
+}
+
+let cmEditor = null;
+
+function initCodeMirror() {
+  if (cmEditor) cmEditor.destroy();
+
+  const currentTheme = document.documentElement.getAttribute('data-theme');
+  const isDark = DARK_THEMES.includes(currentTheme);
+
+  const extensions = [
+    basicSetup,
+    markdown({ base: markdownLanguage, codeLanguages: languages }),
+    EditorView.lineWrapping,
+    EditorView.theme({
+      '&': { height: '100%', fontSize: '14px' },
+      '.cm-scroller': { overflow: 'auto' },
+      '.cm-content': { fontFamily: "'SF Mono', 'Fira Code', 'Cascadia Code', monospace", padding: '16px 0' },
+      '.cm-gutters': { display: 'none' },
+    }),
+  ];
+
+  if (isDark) extensions.push(oneDark);
+
+  window.__cmEditor = cmEditor = new EditorView({
+    state: EditorState.create({
+      doc: '',
+      extensions,
+    }),
+    parent: codemirrorHost,
+  });
+}
+
+function getCmContent() {
+  return cmEditor ? cmEditor.state.doc.toString() : '';
+}
+
+function setCmContent(text) {
+  if (!cmEditor) return;
+  cmEditor.dispatch({
+    changes: { from: 0, to: cmEditor.state.doc.length, insert: text },
+  });
 }
 
 // ===== Default Welcome Doc =====
@@ -382,8 +447,13 @@ function showInputView() {
   resetEditMode();
   renderedView.classList.add('hidden');
   inputView.classList.remove('hidden');
-  markdownInput.value = '';
+  setCmContent('');
   editTextarea.value = '';
+  // Reset input view to edit mode
+  inputEditor.classList.remove('hidden');
+  inputPreview.classList.add('hidden');
+  inputEditToggle.classList.add('active');
+  inputPreviewToggle.classList.remove('active');
   newBtn.classList.add('hidden');
   updateActiveState();
   clearUrl();
@@ -522,7 +592,7 @@ function handleFile(file) {
 }
 
 function handlePaste() {
-  const content = markdownInput.value.trim();
+  const content = getCmContent().trim();
   if (!content) return;
   const headerMatch = content.match(/^#{1,6}\s+(.+)$/m);
   const name = (headerMatch ? headerMatch[1].trim() : null) || 'Untitled Paste ' + formatDate(new Date().toISOString());
@@ -582,29 +652,47 @@ fileInput.addEventListener('change', (e) => {
   fileInput.value = '';
 });
 
-dropZone.addEventListener('dragover', (e) => {
+// Drop overlay for file drops
+inputView.addEventListener('dragover', (e) => {
   e.preventDefault();
-  dropZone.classList.add('dragover');
+  dropOverlay.classList.remove('hidden');
 });
 
-dropZone.addEventListener('dragleave', () => {
-  dropZone.classList.remove('dragover');
+inputView.addEventListener('dragleave', (e) => {
+  if (!inputView.contains(e.relatedTarget)) {
+    dropOverlay.classList.add('hidden');
+  }
 });
 
-dropZone.addEventListener('drop', (e) => {
+inputView.addEventListener('drop', (e) => {
   e.preventDefault();
-  dropZone.classList.remove('dragover');
+  dropOverlay.classList.add('hidden');
   const file = e.dataTransfer.files[0];
   if (file) handleFile(file);
 });
 
 renderBtn.addEventListener('click', handlePaste);
 
-markdownInput.addEventListener('keydown', (e) => {
-  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
-    e.preventDefault();
-    handlePaste();
-  }
+// Input edit/preview toggle
+inputEditToggle.addEventListener('click', () => {
+  inputEditor.classList.remove('hidden');
+  inputPreview.classList.add('hidden');
+  inputEditToggle.classList.add('active');
+  inputPreviewToggle.classList.remove('active');
+});
+
+inputPreviewToggle.addEventListener('click', () => {
+  const content = getCmContent();
+  const raw = marked.parse(content);
+  const clean = DOMPurify.sanitize(raw, {
+    ADD_TAGS: ['input'],
+    ADD_ATTR: ['type', 'checked', 'disabled', 'class', 'id'],
+  });
+  inputPreviewOutput.innerHTML = clean;
+  inputEditor.classList.add('hidden');
+  inputPreview.classList.remove('hidden');
+  inputPreviewToggle.classList.add('active');
+  inputEditToggle.classList.remove('active');
 });
 
 // Alignment
@@ -709,6 +797,7 @@ window.addEventListener('hashchange', () => {
 initTheme();
 initAlign();
 loadHighlightTheme();
+initCodeMirror();
 renderHistoryList();
 
 if (!handleIncomingUrl()) {
