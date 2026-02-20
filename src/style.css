@@ -580,34 +580,55 @@ textarea#markdownInput:focus {
   margin-right: 12px;
 }
 
-.split-pane {
+.rendered-header-actions {
   display: flex;
-  flex: 1;
-  min-height: 0;
+  align-items: center;
+  gap: 8px;
+}
+
+.edit-preview-toggle {
+  display: flex;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
   overflow: hidden;
 }
 
-.split-edit {
-  flex: 1;
-  display: flex;
-  min-width: 0;
+.toggle-btn {
+  padding: 5px 12px;
+  font-size: 13px;
+  font-weight: 500;
+  border: none;
+  background: var(--bg-primary);
+  color: var(--text-secondary);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.toggle-btn:not(:last-child) {
   border-right: 1px solid var(--border-color);
 }
 
-.split-divider {
-  width: 0;
+.toggle-btn.active {
+  background: var(--accent-color, var(--accent));
+  color: #fff;
 }
 
-.split-preview {
+.toggle-btn:hover:not(.active) {
+  background: var(--bg-tertiary);
+}
+
+.edit-area {
   flex: 1;
-  overflow-y: auto;
-  min-width: 0;
+  display: flex;
+  min-height: 0;
 }
 
 .edit-textarea {
   width: 100%;
   height: 100%;
-  padding: 24px 20px;
+  padding: 24px 32px;
+  max-width: 980px;
+  margin: 0 auto;
   border: none;
   outline: none;
   resize: none;
@@ -617,17 +638,6 @@ textarea#markdownInput:focus {
   background: var(--bg-primary);
   color: var(--text-primary);
   tab-size: 2;
-}
-
-@media (max-width: 768px) {
-  .split-pane {
-    flex-direction: column;
-  }
-  .split-edit {
-    border-right: none;
-    border-bottom: 1px solid var(--border-color);
-    max-height: 40vh;
-  }
 }
 
 .markdown-body {

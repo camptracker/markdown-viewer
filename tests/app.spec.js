@@ -62,27 +62,49 @@ test.describe('Paste & Render', () => {
   });
 });
 
-test.describe('Edit pane (live preview)', () => {
-  test('editing textarea updates preview in real time', async ({ page }) => {
-    // First render something
+test.describe('Edit/Preview toggle', () => {
+  test('default is preview mode', async ({ page }) => {
+    await page.fill('#markdownInput', '# Test');
+    await page.click('#renderBtn');
+
+    await expect(page.locator('#markdownOutput')).not.toHaveClass(/hidden/);
+    await expect(page.locator('#editArea')).toHaveClass(/hidden/);
+    await expect(page.locator('#previewToggle')).toHaveClass(/active/);
+  });
+
+  test('clicking Edit shows textarea, clicking Preview renders', async ({ page }) => {
     await page.fill('#markdownInput', '# Original');
     await page.click('#renderBtn');
 
-    // Edit in the edit textarea
-    await page.fill('#editTextarea', '# Updated\n\nNew content');
-    await page.waitForTimeout(300); // debounce
+    // Switch to edit
+    await page.click('#editToggle');
+    await expect(page.locator('#editArea')).not.toHaveClass(/hidden/);
+    await expect(page.locator('#markdownOutput')).toHaveClass(/hidden/);
+    const value = await page.locator('#editTextarea').inputValue();
+    expect(value).toBe('# Original');
 
+    // Modify and switch back to preview
+    await page.fill('#editTextarea', '# Modified');
+    await page.click('#previewToggle');
+    await expect(page.locator('#markdownOutput')).not.toHaveClass(/hidden/);
     const html = await page.locator('#markdownOutput').innerHTML();
-    expect(html).toContain('Updated');
-    expect(html).toContain('New content');
+    expect(html).toContain('Modified');
   });
 
-  test('edit textarea is populated when viewing an entry', async ({ page }) => {
-    await page.fill('#markdownInput', '# My Doc');
+  test('edits are saved to history', async ({ page }) => {
+    await page.fill('#markdownInput', '# Save Test');
     await page.click('#renderBtn');
 
+    await page.click('#editToggle');
+    await page.fill('#editTextarea', '# Edited Content');
+    await page.click('#previewToggle');
+
+    // Reload and check history still has edited content
+    await page.reload();
+    await page.click('.history-item-info');
+    await page.click('#editToggle');
     const value = await page.locator('#editTextarea').inputValue();
-    expect(value).toBe('# My Doc');
+    expect(value).toBe('# Edited Content');
   });
 });
 
@@ -164,13 +186,14 @@ test.describe('URL serialization', () => {
     expect(html).toContain('Shared Doc');
   });
 
-  test('editing updates URL hash', async ({ page }) => {
+  test('editing updates URL hash on preview switch', async ({ page }) => {
     await page.fill('#markdownInput', '# Before');
     await page.click('#renderBtn');
     const urlBefore = page.url();
 
+    await page.click('#editToggle');
     await page.fill('#editTextarea', '# After Edit');
-    await page.waitForTimeout(500);
+    await page.click('#previewToggle');
     const urlAfter = page.url();
 
     expect(urlBefore).not.toBe(urlAfter);

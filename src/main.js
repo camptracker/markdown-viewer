@@ -72,6 +72,10 @@ const renderBtn = $('#renderBtn');
 const markdownOutput = $('#markdownOutput');
 const renderedTitle = $('#renderedTitle');
 const editTextarea = $('#editTextarea');
+const editToggle = $('#editToggle');
+const previewToggle = $('#previewToggle');
+const editArea = $('#editArea');
+let isEditMode = false;
 
 // ===== Theme =====
 function initTheme() {
@@ -166,8 +170,17 @@ function renderMarkdown(content, title) {
 }
 
 // ===== Views =====
+function resetEditMode() {
+  isEditMode = false;
+  editArea.classList.add('hidden');
+  markdownOutput.classList.remove('hidden');
+  previewToggle.classList.add('active');
+  editToggle.classList.remove('active');
+}
+
 function showInputView() {
   activeId = null;
+  resetEditMode();
   renderedView.classList.add('hidden');
   inputView.classList.remove('hidden');
   markdownInput.value = '';
@@ -180,6 +193,7 @@ function showEntry(id) {
   const entry = history.find((e) => e.id === id);
   if (!entry) return;
   activeId = id;
+  resetEditMode();
   editTextarea.value = entry.content;
   renderMarkdown(entry.content, entry.name);
   updateActiveState();
@@ -331,20 +345,33 @@ markdownInput.addEventListener('keydown', (e) => {
   }
 });
 
-// Live preview: update as you type in edit pane
-let debounceTimer;
-editTextarea.addEventListener('input', () => {
-  clearTimeout(debounceTimer);
-  debounceTimer = setTimeout(() => {
-    const content = editTextarea.value;
-    renderMarkdown(content, renderedTitle.textContent);
-    const entry = history.find((e) => e.id === activeId);
-    if (entry) {
-      entry.content = content;
-      saveHistory();
-      updateUrlForEntry(entry);
-    }
-  }, 200);
+// Edit/Preview toggle
+editToggle.addEventListener('click', () => {
+  if (isEditMode) return;
+  isEditMode = true;
+  const entry = history.find((e) => e.id === activeId);
+  if (entry) editTextarea.value = entry.content;
+  markdownOutput.classList.add('hidden');
+  editArea.classList.remove('hidden');
+  editToggle.classList.add('active');
+  previewToggle.classList.remove('active');
+  editTextarea.focus();
+});
+
+previewToggle.addEventListener('click', () => {
+  if (!isEditMode) return;
+  isEditMode = false;
+  const entry = history.find((e) => e.id === activeId);
+  if (entry) {
+    entry.content = editTextarea.value;
+    saveHistory();
+    updateUrlForEntry(entry);
+  }
+  renderMarkdown(editTextarea.value, renderedTitle.textContent);
+  editArea.classList.add('hidden');
+  markdownOutput.classList.remove('hidden');
+  previewToggle.classList.add('active');
+  editToggle.classList.remove('active');
 });
 
 // ===== Init =====
