@@ -43,8 +43,12 @@ marked.setOptions({
 
 const renderer = new marked.Renderer();
 
+let tocEntries = [];
+
 renderer.heading = function ({ text, depth }) {
-  return `<h${depth}>${text}</h${depth}>`;
+  const slug = text.replace(/<[^>]*>/g, '').replace(/[^\w\s-]/g, '').trim().replace(/\s+/g, '-').toLowerCase();
+  tocEntries.push({ text: text.replace(/<[^>]*>/g, ''), depth, slug });
+  return `<h${depth} id="${slug}">${text}</h${depth}>`;
 };
 
 renderer.image = function ({ href, title, text }) {
@@ -82,6 +86,9 @@ const alignLeft = $('#alignLeft');
 const alignCenter = $('#alignCenter');
 const alignRight = $('#alignRight');
 const downloadBtn = $('#downloadBtn');
+const tocContainer = $('#tocContainer');
+const tocToggle = $('#tocToggle');
+const tocList = $('#tocList');
 let isEditMode = false;
 const ALIGN_KEY = 'md-viewer-align';
 
@@ -276,10 +283,11 @@ function clearUrl() {
 
 // ===== Render Markdown =====
 function renderMarkdown(content, title) {
+  tocEntries = [];
   const raw = marked.parse(content);
   const clean = DOMPurify.sanitize(raw, {
     ADD_TAGS: ['input'],
-    ADD_ATTR: ['type', 'checked', 'disabled', 'class'],
+    ADD_ATTR: ['type', 'checked', 'disabled', 'class', 'id'],
   });
   markdownOutput.innerHTML = clean;
   renderedTitle.textContent = title || 'Preview';
@@ -289,6 +297,37 @@ function renderMarkdown(content, title) {
 
   markdownOutput.querySelectorAll('input[type="checkbox"]').forEach((cb) => {
     cb.setAttribute('disabled', '');
+  });
+
+  // Build TOC
+  buildToc();
+}
+
+function buildToc() {
+  tocList.innerHTML = '';
+  tocList.classList.add('hidden');
+  tocToggle?.querySelector('.toc-chevron')?.classList.remove('open');
+
+  if (tocEntries.length <= 1) {
+    tocContainer.classList.add('hidden');
+    return;
+  }
+  tocContainer.classList.remove('hidden');
+
+  const minDepth = Math.min(...tocEntries.map(e => e.depth));
+  tocEntries.forEach(({ text, depth, slug }) => {
+    const a = document.createElement('a');
+    a.className = 'toc-item toc-depth-' + (depth - minDepth);
+    a.textContent = text;
+    a.href = '#' + slug;
+    a.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = document.getElementById(slug);
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }
+    });
+    tocList.appendChild(a);
   });
 }
 
@@ -534,6 +573,12 @@ function initAlign() {
 alignLeft.addEventListener('click', () => setAlign('left'));
 alignCenter.addEventListener('click', () => setAlign('center'));
 alignRight.addEventListener('click', () => setAlign('right'));
+
+// TOC toggle
+tocToggle.addEventListener('click', () => {
+  const isHidden = tocList.classList.toggle('hidden');
+  tocToggle.querySelector('.toc-chevron').classList.toggle('open', !isHidden);
+});
 
 // Download button
 downloadBtn.addEventListener('click', () => {

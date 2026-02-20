@@ -811,6 +811,77 @@ textarea#markdownInput:focus {
   background: var(--bg-tertiary);
 }
 
+/* ===== Table of Contents ===== */
+.toc-container {
+  border-bottom: 1px solid var(--border-color);
+  background: var(--bg-secondary);
+}
+
+.toc-container.hidden {
+  display: none;
+}
+
+.toc-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 8px 24px;
+  border: none;
+  background: none;
+  color: var(--text-secondary);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: color 0.15s;
+}
+
+.toc-toggle:hover {
+  color: var(--text-primary);
+}
+
+.toc-chevron {
+  margin-left: auto;
+  transition: transform 0.2s;
+}
+
+.toc-chevron.open {
+  transform: rotate(180deg);
+}
+
+.toc-list {
+  padding: 0 24px 12px;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.toc-list.hidden {
+  display: none;
+}
+
+.toc-item {
+  display: block;
+  padding: 4px 8px;
+  border-radius: 4px;
+  color: var(--text-secondary);
+  text-decoration: none;
+  font-size: 13px;
+  line-height: 1.4;
+  transition: background 0.15s, color 0.15s;
+}
+
+.toc-item:hover {
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+
+.toc-depth-0 { padding-left: 8px; font-weight: 500; }
+.toc-depth-1 { padding-left: 24px; }
+.toc-depth-2 { padding-left: 40px; }
+.toc-depth-3 { padding-left: 56px; }
+.toc-depth-4 { padding-left: 72px; }
+
 .edit-area {
   flex: 1;
   display: flex;
