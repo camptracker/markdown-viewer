@@ -384,7 +384,7 @@ html, body {
   border-bottom: 1px solid var(--border-color);
   display: flex;
   align-items: center;
-  min-height: 45px;
+  height: 54px;
   box-sizing: border-box;
 }
 
@@ -721,7 +721,7 @@ textarea#markdownInput:focus {
   border-bottom: 1px solid var(--border-color);
   background: var(--bg-secondary);
   flex-shrink: 0;
-  min-height: 45px;
+  height: 54px;
   box-sizing: border-box;
 }
 
