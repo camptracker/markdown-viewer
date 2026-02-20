@@ -95,10 +95,83 @@ function setTheme(theme) {
   loadHighlightTheme();
 }
 
+// ===== Default Welcome Doc =====
+const WELCOME_MD = `# 📝 Markdown Viewer
+
+**Your instant markdown renderer.** Paste it, drop it, edit it, share it — no sign-up, no server, no nonsense.
+
+---
+
+## ✨ Features
+
+- **Drag & drop** any \`.md\` file or **paste** raw markdown
+- **Live edit** — switch to Edit mode and see changes instantly on Preview
+- **7 beautiful themes** — Light, Dark, Dracula, Monokai, One Dark, Solarized, Nord
+- **Shareable links** — every document gets a unique URL you can send to anyone
+- **History sidebar** — all your docs saved locally, always accessible
+- **GitHub-flavored markdown** — tables, task lists, syntax highlighting, the works
+- **Alignment control** — left, center, or right align your content
+- **100% private** — everything stays in your browser. Nothing uploaded anywhere.
+
+## 🚀 How to Use
+
+1. **Paste or drop** your markdown on the home screen
+2. Click **Render** (or hit \`Ctrl+Enter\`)
+3. Use the **Edit / Preview** toggle to switch between raw markdown and rendered output
+4. **Share** — just copy the URL from your browser. The entire document is encoded in the link!
+5. Your docs are saved in the **History sidebar** — click any to reload it
+
+## 🔗 Shareable URLs
+
+Every document generates a unique URL like:
+
+\`\`\`
+https://camptracker.github.io/markdown-viewer/#md=MQAgQg...
+\`\`\`
+
+The content is **compressed and encoded** right in the URL — no database, no server. Send it to anyone and they'll see exactly what you see.
+
+## 🎨 Themes
+
+Pick your vibe from the dropdown in the top bar:
+
+| Theme | Style |
+|-------|-------|
+| Light | Clean GitHub-style |
+| Dark | Easy on the eyes |
+| Dracula | Purple & pink vibes |
+| Monokai | Classic code editor |
+| One Dark | Atom-inspired |
+| Solarized | Ethan Schoonover's classic |
+| Nord | Arctic, minimal |
+
+## 💡 Why Markdown Viewer?
+
+- **No account needed** — just open the page and go
+- **Works offline** — once loaded, no internet required
+- **No tracking** — zero analytics, zero cookies, zero data collection
+- **Fast** — renders instantly, even large documents
+- **Free forever** — open source, hosted on GitHub Pages
+
+---
+
+*Try editing this document — click **Edit** above and start typing!*
+`;
+
 // ===== History (localStorage) =====
 function loadHistory() {
   try {
-    return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    if (stored && stored.length > 0) return stored;
+    // Seed with welcome doc
+    const welcome = [{
+      id: 'welcome',
+      name: 'Welcome to Markdown Viewer',
+      content: WELCOME_MD,
+      date: new Date().toISOString(),
+    }];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(welcome));
+    return welcome;
   } catch {
     return [];
   }
@@ -424,7 +497,14 @@ initTheme();
 initAlign();
 loadHighlightTheme();
 renderHistoryList();
-handleIncomingUrl();
+
+if (!handleIncomingUrl()) {
+  // Auto-show welcome doc if it exists and nothing else is active
+  const welcome = history.find(e => e.id === 'welcome');
+  if (welcome && !activeId) {
+    showEntry('welcome');
+  }
+}
 
 // Collapse sidebar by default on mobile
 if (window.innerWidth <= 768) {
