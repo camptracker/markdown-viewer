@@ -335,7 +335,10 @@ function startRename(li, entry) {
     const newName = input.value.trim() || entry.name;
     entry.name = newName;
     saveHistory();
-    if (activeId === entry.id) renderedTitle.textContent = newName;
+    if (activeId === entry.id) {
+      renderedTitle.textContent = newName;
+      updateUrlForEntry(entry);
+    }
     renderHistoryList();
   };
   input.addEventListener('blur', commit);
