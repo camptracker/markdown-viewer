@@ -702,6 +702,12 @@ qrBtn.addEventListener('click', async () => {
     color: { dark: '#000000', light: '#ffffff' },
   });
   qrModal.classList.remove('hidden');
+  // Auto-copy QR to clipboard
+  qrCanvas.toBlob((blob) => {
+    navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => {
+      showToast('QR code copied!');
+    }).catch(() => {});
+  });
 });
 
 qrCopyBtn.addEventListener('click', () => {
