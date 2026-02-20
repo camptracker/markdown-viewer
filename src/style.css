@@ -1101,6 +1101,34 @@ textarea#markdownInput:focus {
   }
 }
 
+/* ===== QR Modal ===== */
+.qr-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 300;
+}
+.qr-modal-content {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 16px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+}
+.qr-modal-content canvas {
+  border-radius: 8px;
+}
+.qr-modal-actions {
+  display: flex;
+  gap: 8px;
+}
+
 /* ===== Toast ===== */
 .toast {
   position: fixed;

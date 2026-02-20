@@ -140,6 +140,9 @@
             <button class="btn btn-icon" id="copyUrlBtn" aria-label="Copy URL" title="Copy URL">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M10 13a5 5 0 007.54.54l3-3a5 5 0 00-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 00-7.54-.54l-3 3a5 5 0 007.07 7.07l1.71-1.71"/></svg>
             </button>
+            <button class="btn btn-icon" id="qrBtn" aria-label="QR Code" title="QR Code">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="8" height="8" rx="1"/><rect x="14" y="2" width="8" height="8" rx="1"/><rect x="2" y="14" width="8" height="8" rx="1"/><rect x="14" y="14" width="4" height="4"/><line x1="22" y1="14" x2="22" y2="18"/><line x1="18" y1="22" x2="22" y2="22"/></svg>
+            </button>
             <button class="btn btn-share" id="downloadBtn" aria-label="Download as .md" title="Download as .md">
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
               <span>.md</span>
@@ -155,6 +158,17 @@
           <article class="markdown-body" id="markdownOutput"></article>
         </div>
       </main>
+    </div>
+
+    <!-- QR Code Modal -->
+    <div class="qr-modal hidden" id="qrModal">
+      <div class="qr-modal-content">
+        <canvas id="qrCanvas"></canvas>
+        <div class="qr-modal-actions">
+          <button class="btn btn-primary" id="qrCopyBtn">Copy QR Code</button>
+          <button class="btn btn-secondary" id="qrCloseBtn">Close</button>
+        </div>
+      </div>
     </div>
   </div>
 

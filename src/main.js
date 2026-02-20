@@ -4,6 +4,7 @@ import hljs from 'highlight.js';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
+import QRCode from 'qrcode';
 
 // Expose for e2e testing
 window.__lzCompress = compressToEncodedURIComponent;
@@ -684,6 +685,34 @@ copyUrlBtn.addEventListener('click', () => {
     }, 2000);
   });
 });
+
+// QR Code button
+const qrBtn = $('#qrBtn');
+const qrModal = $('#qrModal');
+const qrCanvas = $('#qrCanvas');
+const qrCopyBtn = $('#qrCopyBtn');
+const qrCloseBtn = $('#qrCloseBtn');
+
+qrBtn.addEventListener('click', async () => {
+  await QRCode.toCanvas(qrCanvas, window.location.href, {
+    width: 280,
+    margin: 2,
+    color: { dark: '#000000', light: '#ffffff' },
+  });
+  qrModal.classList.remove('hidden');
+});
+
+qrCopyBtn.addEventListener('click', () => {
+  qrCanvas.toBlob((blob) => {
+    navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => {
+      showToast('QR code copied!');
+      qrModal.classList.add('hidden');
+    });
+  });
+});
+
+qrCloseBtn.addEventListener('click', () => qrModal.classList.add('hidden'));
+qrModal.addEventListener('click', (e) => { if (e.target === qrModal) qrModal.classList.add('hidden'); });
 
 // Download button
 downloadBtn.addEventListener('click', () => {
