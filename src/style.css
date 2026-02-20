@@ -680,34 +680,38 @@ html, body {
   cursor: pointer;
 }
 
-/* Input Editor (CodeMirror) */
+/* Input Editor */
 .input-editor {
   flex: 1;
-  overflow: hidden;
   display: flex;
   flex-direction: column;
-  padding: 20px 24px;
+  padding: 16px 24px;
+  overflow: hidden;
 }
 
-.input-editor .cm-editor {
+.input-editor textarea {
   flex: 1;
-  background: var(--input-bg);
+  width: 100%;
+  padding: 16px;
   border: 1px solid var(--border-color);
   border-radius: 10px;
-  overflow: hidden;
-  transition: border-color 0.15s;
+  background: var(--input-bg);
+  color: var(--text-primary);
+  font-family: 'SF Mono', 'Fira Code', 'Cascadia Code', 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+  transition: border-color 0.15s, box-shadow 0.15s;
+  overflow-y: auto;
 }
 
-.input-editor .cm-editor.cm-focused {
+.input-editor textarea:focus {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px var(--accent-subtle);
 }
 
-.input-editor .cm-editor .cm-scroller {
-  overflow: auto;
-}
-
-.input-editor .cm-editor .cm-placeholder {
+.input-editor textarea::placeholder {
   color: var(--text-muted);
   font-style: italic;
 }

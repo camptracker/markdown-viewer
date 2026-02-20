@@ -4,12 +4,6 @@ import hljs from 'highlight.js';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
 import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
-import { EditorView, basicSetup } from 'codemirror';
-import { markdown, markdownLanguage } from '@codemirror/lang-markdown';
-import { languages } from '@codemirror/language-data';
-import { EditorState } from '@codemirror/state';
-import { placeholder } from '@codemirror/view';
-import { oneDark } from '@codemirror/theme-one-dark';
 
 // Expose for e2e testing
 window.__lzCompress = compressToEncodedURIComponent;
@@ -82,7 +76,7 @@ const fileInput = $('#fileInput');
 const renderBtn = $('#renderBtn');
 const markdownOutput = $('#markdownOutput');
 const inputEditor = $('#inputEditor');
-const codemirrorHost = $('#codemirrorHost');
+const markdownInput = $('#markdownInput');
 const inputPreview = $('#inputPreview');
 const inputPreviewOutput = $('#inputPreviewOutput');
 const inputEditToggle = $('#inputEditToggle');
@@ -112,65 +106,15 @@ function setTheme(theme) {
   localStorage.setItem(THEME_KEY, theme);
   if (themeSelect) themeSelect.value = theme;
   loadHighlightTheme();
-  // Rebuild CodeMirror with new theme
-  if (cmEditor) {
-    const content = getCmContent();
-    initCodeMirror();
-    setCmContent(content);
-  }
 }
 
-// ===== CodeMirror Editor =====
-function createEditorTheme() {
-  const currentTheme = document.documentElement.getAttribute('data-theme');
-  const isDark = DARK_THEMES.includes(currentTheme);
-  return isDark ? oneDark : EditorView.theme({});
-}
-
-let cmEditor = null;
-
-function initCodeMirror() {
-  if (cmEditor) cmEditor.destroy();
-
-  const currentTheme = document.documentElement.getAttribute('data-theme');
-  const isDark = DARK_THEMES.includes(currentTheme);
-
-  const extensions = [
-    basicSetup,
-    markdown({ base: markdownLanguage, codeLanguages: languages }),
-    EditorView.lineWrapping,
-    EditorView.theme({
-      '&': { fontSize: '14px' },
-      '&.cm-focused': { outline: 'none' },
-      '.cm-scroller': { overflow: 'auto' },
-      '.cm-content': { fontFamily: "'SF Mono', 'Fira Code', 'Cascadia Code', monospace", padding: '16px', minHeight: '200px' },
-      '.cm-gutters': { display: 'none' },
-    }),
-    EditorView.contentAttributes.of({ 'aria-label': 'Markdown editor' }),
-    EditorState.tabSize.of(2),
-    placeholder('Type your markdown here...'),
-  ];
-
-  if (isDark) extensions.push(oneDark);
-
-  window.__cmEditor = cmEditor = new EditorView({
-    state: EditorState.create({
-      doc: '',
-      extensions,
-    }),
-    parent: codemirrorHost,
-  });
-}
-
+// ===== Editor Helpers =====
 function getCmContent() {
-  return cmEditor ? cmEditor.state.doc.toString() : '';
+  return markdownInput ? markdownInput.value : '';
 }
 
 function setCmContent(text) {
-  if (!cmEditor) return;
-  cmEditor.dispatch({
-    changes: { from: 0, to: cmEditor.state.doc.length, insert: text },
-  });
+  if (markdownInput) markdownInput.value = text;
 }
 
 // ===== Default Welcome Doc =====
@@ -873,7 +817,6 @@ function showInputViewSilent() {
 initTheme();
 initAlign();
 loadHighlightTheme();
-initCodeMirror();
 renderHistoryList();
 
 if (!handleIncomingUrl()) {

@@ -3,16 +3,7 @@ import { test, expect } from '@playwright/test';
 const BASE = 'http://localhost:4173';
 
 async function typeInEditor(page, text) {
-  // Set content in CodeMirror via the exposed API
-  await page.evaluate((t) => {
-    const cmView = document.querySelector('.cm-editor')?.cmView?.view
-      || document.querySelector('#codemirrorHost .cm-editor')?.__view;
-    // Fallback: dispatch through the CM instance on window
-    if (window.__cmEditor) {
-      const cm = window.__cmEditor;
-      cm.dispatch({ changes: { from: 0, to: cm.state.doc.length, insert: t } });
-    }
-  }, text);
+  await page.fill('#markdownInput', text);
 }
 
 test.beforeEach(async ({ page }) => {
