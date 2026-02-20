@@ -161,17 +161,18 @@ Pick your vibe from the dropdown in the top bar:
 // ===== History (localStorage) =====
 function loadHistory() {
   try {
-    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
-    if (stored && stored.length > 0) return stored;
-    // Seed with welcome doc
-    const welcome = [{
-      id: 'welcome',
-      name: 'Welcome to Markdown Viewer',
-      content: WELCOME_MD,
-      date: new Date().toISOString(),
-    }];
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(welcome));
-    return welcome;
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
+    // Ensure welcome doc exists (at the end so it doesn't clutter top)
+    if (!stored.find(e => e.id === 'welcome')) {
+      stored.push({
+        id: 'welcome',
+        name: 'Welcome to Markdown Viewer',
+        content: WELCOME_MD,
+        date: new Date().toISOString(),
+      });
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(stored));
+    }
+    return stored;
   } catch {
     return [];
   }
