@@ -230,15 +230,22 @@ function showConfirmModal(title, message, onConfirm) {
 }
 
 // ===== URL Serialization =====
-function contentToHash(content) {
-  return '#md=' + compressToEncodedURIComponent(content);
+function contentToHash(content, title) {
+  let hash = '#md=' + compressToEncodedURIComponent(content);
+  if (title) hash += '&title=' + encodeURIComponent(title);
+  return hash;
 }
 
 function hashToContent() {
   const hash = window.location.hash;
   if (!hash.startsWith('#md=')) return null;
   try {
-    return decompressFromEncodedURIComponent(hash.slice(4));
+    // Split on &title= to separate content from title
+    const titleIdx = hash.indexOf('&title=');
+    const mdPart = titleIdx >= 0 ? hash.slice(4, titleIdx) : hash.slice(4);
+    const title = titleIdx >= 0 ? decodeURIComponent(hash.slice(titleIdx + 7)) : null;
+    const content = decompressFromEncodedURIComponent(mdPart);
+    return { content, title };
   } catch {
     return null;
   }
@@ -246,7 +253,7 @@ function hashToContent() {
 
 function updateUrlForEntry(entry) {
   if (!entry) return;
-  const newHash = contentToHash(entry.content);
+  const newHash = contentToHash(entry.content, entry.name);
   window.history.replaceState(null, '', newHash);
 }
 
@@ -542,8 +549,9 @@ previewToggle.addEventListener('click', () => {
 
 // ===== Init =====
 function handleIncomingUrl() {
-  const content = hashToContent();
-  if (!content) return false;
+  const result = hashToContent();
+  if (!result || !result.content) return false;
+  const { content, title } = result;
   // Check if it matches the welcome doc
   if (content === WELCOME_MD) {
     activeId = 'welcome';
@@ -554,8 +562,13 @@ function handleIncomingUrl() {
   }
   let existing = history.find((e) => e.content === content);
   if (!existing) {
-    const name = 'Shared ' + formatDate(new Date().toISOString());
+    const name = title || 'Shared ' + formatDate(new Date().toISOString());
     existing = addToHistory(name, content);
+  } else if (title && existing.name !== title) {
+    // Update name if URL has a title and it differs
+    existing.name = title;
+    saveHistory();
+    renderHistoryList();
   }
   activeId = existing.id;
   editTextarea.value = existing.content;
