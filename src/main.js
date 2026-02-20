@@ -289,14 +289,16 @@ function hashToContent() {
   }
 }
 
-function updateUrlForEntry(entry, push = false) {
+function updateUrlForEntry(entry, push = false, silent = false) {
   if (!entry) return;
   const newHash = contentToHash(entry.content, entry.name);
+  const changed = newHash !== window.location.hash;
   if (push) {
     window.history.pushState({ entryId: entry.id }, '', newHash);
   } else {
     window.history.replaceState({ entryId: entry.id }, '', newHash);
   }
+  if (changed && !silent) showToast('URL updated');
 }
 
 function clearUrl(push = false) {
@@ -441,7 +443,7 @@ function showEntry(id) {
   editTextarea.value = entry.content;
   renderMarkdown(entry.content, entry.name);
   updateActiveState();
-  updateUrlForEntry(entry, true);
+  updateUrlForEntry(entry, true, true);
 
   // Scroll content to top
   if (mainContent) mainContent.scrollTop = 0;
@@ -559,7 +561,7 @@ function handleFile(file) {
     activeId = entry.id;
     renderMarkdown(content, file.name);
     updateActiveState();
-    updateUrlForEntry(entry, true);
+    updateUrlForEntry(entry, true, true);
   };
   reader.readAsText(file);
 }
@@ -574,7 +576,7 @@ function handlePaste() {
   editTextarea.value = content;
   renderMarkdown(content, name);
   updateActiveState();
-  updateUrlForEntry(entry, true);
+  updateUrlForEntry(entry, true, true);
 }
 
 // ===== Sidebar Mobile Overlay =====
