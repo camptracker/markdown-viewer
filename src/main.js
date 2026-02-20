@@ -95,11 +95,23 @@ function initTheme() {
   setTheme(theme);
 }
 
+const THEME_COLORS = {
+  light: '#ffffff',
+  dark: '#0d1117',
+  dracula: '#282a36',
+  monokai: '#272822',
+  'atom-one-dark': '#282c34',
+  solarized: '#002b36',
+  nord: '#2e3440',
+};
+
 function setTheme(theme) {
   document.documentElement.setAttribute('data-theme', theme);
   localStorage.setItem(THEME_KEY, theme);
   if (themeSelect) themeSelect.value = theme;
   loadHighlightTheme();
+  const meta = document.querySelector('meta[name="theme-color"]');
+  if (meta) meta.setAttribute('content', THEME_COLORS[theme] || '#ffffff');
 }
 
 // ===== Editor Helpers =====
