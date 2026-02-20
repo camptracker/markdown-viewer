@@ -463,7 +463,6 @@ editToggle.addEventListener('click', () => {
   editArea.classList.remove('hidden');
   editToggle.classList.add('active');
   previewToggle.classList.remove('active');
-  editTextarea.focus();
 });
 
 previewToggle.addEventListener('click', () => {
