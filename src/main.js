@@ -3,6 +3,7 @@ import 'github-markdown-css/github-markdown.css';
 import hljs from 'highlight.js';
 import { marked } from 'marked';
 import DOMPurify from 'dompurify';
+import { compressToEncodedURIComponent, decompressFromEncodedURIComponent } from 'lz-string';
 
 // Dynamically load highlight.js theme based on current theme
 function loadHighlightTheme() {
@@ -160,6 +161,7 @@ function showInputView() {
   markdownInput.value = '';
   resetEditMode();
   updateActiveState();
+  clearUrl();
 }
 
 function resetEditMode() {
@@ -177,6 +179,7 @@ function showEntry(id) {
   resetEditMode();
   renderMarkdown(entry.content, entry.name);
   updateActiveState();
+  updateUrlForEntry(entry);
 
   // On mobile, close sidebar after selecting
   if (window.innerWidth <= 768) {
@@ -235,6 +238,7 @@ function handleFile(file) {
     activeId = entry.id;
     renderMarkdown(content, file.name);
     updateActiveState();
+    updateUrlForEntry(entry);
   };
   reader.readAsText(file);
 }
@@ -247,6 +251,7 @@ function handlePaste() {
   activeId = entry.id;
   renderMarkdown(content, name);
   updateActiveState();
+  updateUrlForEntry(entry);
 }
 
 // ===== Sidebar Mobile Overlay =====
@@ -353,6 +358,7 @@ previewToggle.addEventListener('click', () => {
   if (entry) {
     entry.content = editTextarea.value;
     saveHistory();
+    updateUrlForEntry(entry);
   }
   renderMarkdown(editTextarea.value, renderedTitle.textContent);
   editArea.classList.add('hidden');
@@ -361,6 +367,58 @@ previewToggle.addEventListener('click', () => {
   editToggle.classList.remove('active');
 });
 
+// ===== URL Serialization =====
+function contentToHash(content) {
+  return '#md=' + compressToEncodedURIComponent(content);
+}
+
+function hashToContent() {
+  const hash = window.location.hash;
+  if (!hash.startsWith('#md=')) return null;
+  try {
+    return decompressFromEncodedURIComponent(hash.slice(4));
+  } catch {
+    return null;
+  }
+}
+
+function updateUrlForEntry(entry) {
+  if (!entry) return;
+  const newHash = contentToHash(entry.content);
+  history.length; // just to reference
+  window.history.replaceState(null, '', newHash);
+}
+
+function clearUrl() {
+  window.history.replaceState(null, '', window.location.pathname);
+}
+
+// Override showInputView to clear URL
+const _origShowInputView = showInputView;
+
 // ===== Init =====
+function handleIncomingUrl() {
+  const content = hashToContent();
+  if (!content) return false;
+  // Check if we already have this exact content in history
+  let existing = history.find((e) => e.content === content);
+  if (!existing) {
+    const name = 'Shared ' + formatDate(new Date().toISOString());
+    existing = addToHistory(name, content);
+  }
+  activeId = existing.id;
+  renderMarkdown(existing.content, existing.name);
+  updateActiveState();
+  return true;
+}
+
+// Handle browser back/forward
+window.addEventListener('hashchange', () => {
+  if (!handleIncomingUrl()) {
+    showInputView();
+  }
+});
+
 initTheme();
 renderHistoryList();
+handleIncomingUrl();
