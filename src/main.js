@@ -420,6 +420,18 @@ function showInputView() {
   updateMetaTags(null, null);
 }
 
+function showToast(msg) {
+  const toast = document.createElement('div');
+  toast.className = 'toast';
+  toast.textContent = msg;
+  document.body.appendChild(toast);
+  requestAnimationFrame(() => toast.classList.add('show'));
+  setTimeout(() => {
+    toast.classList.remove('show');
+    setTimeout(() => toast.remove(), 300);
+  }, 1800);
+}
+
 function showEntry(id) {
   const entry = findEntry(id);
   if (!entry) return;
@@ -665,6 +677,7 @@ copyUrlBtn.addEventListener('click', () => {
   navigator.clipboard.writeText(window.location.href).then(() => {
     copyUrlBtn.classList.add('copied');
     copyUrlBtn.setAttribute('title', 'Copied!');
+    showToast('Link copied!');
     setTimeout(() => {
       copyUrlBtn.classList.remove('copied');
       copyUrlBtn.setAttribute('title', 'Copy URL');
