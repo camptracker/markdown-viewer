@@ -461,6 +461,8 @@ html, body {
   border-bottom: 1px solid var(--border-light);
   gap: 10px;
   transition: background 0.1s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 
 .history-item:hover {
