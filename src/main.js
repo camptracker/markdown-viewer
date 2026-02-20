@@ -368,6 +368,8 @@ function showEntry(id) {
   updateUrlForEntry(entry);
 
   // Scroll content to top
+  const mainContent = document.querySelector('.main-content');
+  if (mainContent) mainContent.scrollTop = 0;
   markdownOutput.scrollTop = 0;
   renderedView.scrollTop = 0;
 
