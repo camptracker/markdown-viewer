@@ -809,6 +809,10 @@ textarea#markdownInput:focus {
     display: none;
   }
 
+  .align-toggle {
+    display: none;
+  }
+
   .input-view {
     padding: 24px 16px;
   }

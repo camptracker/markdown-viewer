@@ -425,3 +425,8 @@ initAlign();
 loadHighlightTheme();
 renderHistoryList();
 handleIncomingUrl();
+
+// Collapse sidebar by default on mobile
+if (window.innerWidth <= 768) {
+  sidebarEl.classList.add('collapsed');
+}
