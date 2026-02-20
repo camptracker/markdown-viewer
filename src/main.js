@@ -75,13 +75,7 @@ const renderedView = $('#renderedView');
 const fileInput = $('#fileInput');
 const renderBtn = $('#renderBtn');
 const markdownOutput = $('#markdownOutput');
-const inputEditor = $('#inputEditor');
 const markdownInput = $('#markdownInput');
-const inputPreview = $('#inputPreview');
-const inputPreviewOutput = $('#inputPreviewOutput');
-const inputEditToggle = $('#inputEditToggle');
-const inputPreviewToggle = $('#inputPreviewToggle');
-const dropOverlay = $('#dropOverlay');
 let currentTitle = 'Preview';
 const editTextarea = $('#editTextarea');
 const editToggle = $('#editToggle');
@@ -408,11 +402,6 @@ function showInputView() {
   inputView.classList.remove('hidden');
   setCmContent('');
   editTextarea.value = '';
-  // Reset input view to edit mode
-  inputEditor.classList.remove('hidden');
-  inputPreview.classList.add('hidden');
-  inputEditToggle.classList.add('active');
-  inputPreviewToggle.classList.remove('active');
   newBtn.classList.add('hidden');
   updateActiveState();
   clearUrl(true);
@@ -611,47 +600,31 @@ fileInput.addEventListener('change', (e) => {
   fileInput.value = '';
 });
 
-// Drop overlay for file drops
-inputView.addEventListener('dragover', (e) => {
+const dropZone = $('#dropZone');
+
+dropZone.addEventListener('dragover', (e) => {
   e.preventDefault();
-  dropOverlay.classList.remove('hidden');
+  dropZone.classList.add('dragover');
 });
 
-inputView.addEventListener('dragleave', (e) => {
-  if (!inputView.contains(e.relatedTarget)) {
-    dropOverlay.classList.add('hidden');
-  }
+dropZone.addEventListener('dragleave', () => {
+  dropZone.classList.remove('dragover');
 });
 
-inputView.addEventListener('drop', (e) => {
+dropZone.addEventListener('drop', (e) => {
   e.preventDefault();
-  dropOverlay.classList.add('hidden');
+  dropZone.classList.remove('dragover');
   const file = e.dataTransfer.files[0];
   if (file) handleFile(file);
 });
 
 renderBtn.addEventListener('click', handlePaste);
 
-// Input edit/preview toggle
-inputEditToggle.addEventListener('click', () => {
-  inputEditor.classList.remove('hidden');
-  inputPreview.classList.add('hidden');
-  inputEditToggle.classList.add('active');
-  inputPreviewToggle.classList.remove('active');
-});
-
-inputPreviewToggle.addEventListener('click', () => {
-  const content = getCmContent();
-  const raw = marked.parse(content);
-  const clean = DOMPurify.sanitize(raw, {
-    ADD_TAGS: ['input'],
-    ADD_ATTR: ['type', 'checked', 'disabled', 'class', 'id'],
-  });
-  inputPreviewOutput.innerHTML = clean;
-  inputEditor.classList.add('hidden');
-  inputPreview.classList.remove('hidden');
-  inputPreviewToggle.classList.add('active');
-  inputEditToggle.classList.remove('active');
+markdownInput.addEventListener('keydown', (e) => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
+    e.preventDefault();
+    handlePaste();
+  }
 });
 
 // Alignment
@@ -805,10 +778,6 @@ function showInputViewSilent() {
   inputView.classList.remove('hidden');
   setCmContent('');
   editTextarea.value = '';
-  inputEditor.classList.remove('hidden');
-  inputPreview.classList.add('hidden');
-  inputEditToggle.classList.add('active');
-  inputPreviewToggle.classList.remove('active');
   newBtn.classList.add('hidden');
   updateActiveState();
   updateMetaTags(null, null);
