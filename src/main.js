@@ -165,7 +165,7 @@ Pick your vibe from the dropdown in the top bar:
 // ===== History (localStorage) =====
 const WELCOME_ENTRY = {
   id: 'welcome',
-  name: '📝 Getting Started',
+  name: 'Getting Started',
   content: WELCOME_MD,
   date: '2026-01-01T00:00:00.000Z',
   permanent: true,
