@@ -704,20 +704,37 @@ qrBtn.addEventListener('click', async () => {
   qrModal.classList.remove('hidden');
   // Auto-copy QR to clipboard
   qrCanvas.toBlob((blob) => {
-    navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => {
-      showToast('QR code copied!');
-    }).catch(() => {});
+    if (navigator.clipboard && typeof ClipboardItem !== 'undefined') {
+      navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => {
+        showToast('QR code copied as image!');
+      }).catch(() => {});
+    }
   });
 });
 
-qrCopyBtn.addEventListener('click', () => {
+function copyQrImage() {
   qrCanvas.toBlob((blob) => {
-    navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => {
-      showToast('QR code copied!');
-      qrModal.classList.add('hidden');
-    });
+    if (navigator.clipboard && typeof ClipboardItem !== 'undefined') {
+      navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })]).then(() => {
+        showToast('QR code copied as image!');
+        qrModal.classList.add('hidden');
+      }).catch(() => downloadQrFallback());
+    } else {
+      downloadQrFallback();
+    }
   });
-});
+}
+
+function downloadQrFallback() {
+  const link = document.createElement('a');
+  link.download = 'qr-code.png';
+  link.href = qrCanvas.toDataURL('image/png');
+  link.click();
+  showToast('QR code saved!');
+  qrModal.classList.add('hidden');
+}
+
+qrCopyBtn.addEventListener('click', copyQrImage);
 
 qrCloseBtn.addEventListener('click', () => qrModal.classList.add('hidden'));
 qrModal.addEventListener('click', (e) => { if (e.target === qrModal) qrModal.classList.add('hidden'); });
