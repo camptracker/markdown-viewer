@@ -195,6 +195,7 @@
 
 html, body {
   height: 100%;
+  overflow: hidden;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
   background: var(--bg-primary);
   color: var(--text-primary);
@@ -446,6 +447,7 @@ html, body {
 .main-content {
   flex: 1;
   overflow-y: auto;
+  overscroll-behavior: contain;
   display: flex;
   flex-direction: column;
 }
