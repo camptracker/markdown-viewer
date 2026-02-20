@@ -389,6 +389,7 @@ html, body {
   display: flex;
   align-items: center;
   padding: 10px 16px;
+  min-height: 56px;
   cursor: pointer;
   border-bottom: 1px solid var(--border-light);
   gap: 10px;
