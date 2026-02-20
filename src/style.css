@@ -426,6 +426,7 @@ html, body {
 
 .history-item {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   padding: 10px 16px;
   min-height: 56px;
@@ -857,9 +858,11 @@ textarea#markdownInput:focus {
   display: flex;
   flex-direction: column;
   gap: 1px;
-  padding: 4px 0 8px 12px;
+  padding: 4px 0 4px 4px;
   border-top: 1px solid var(--border-color);
   margin-top: 6px;
+  width: 100%;
+  flex-basis: 100%;
 }
 
 .toc-item {
