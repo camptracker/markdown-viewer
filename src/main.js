@@ -672,3 +672,10 @@ if (!handleIncomingUrl()) {
 if (window.innerWidth <= 768) {
   sidebarEl.classList.add('collapsed');
 }
+
+// Dismiss loading screen
+const loadingScreen = $('#loadingScreen');
+if (loadingScreen) {
+  loadingScreen.classList.add('fade-out');
+  setTimeout(() => loadingScreen.classList.add('hidden'), 300);
+}
