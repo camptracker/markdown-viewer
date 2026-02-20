@@ -617,10 +617,7 @@ loadHighlightTheme();
 renderHistoryList();
 
 if (!handleIncomingUrl()) {
-  // Auto-show welcome doc on first visit
-  if (!activeId) {
-    showEntry('welcome');
-  }
+  showInputView();
 }
 
 // Collapse sidebar by default on mobile
