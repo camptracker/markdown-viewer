@@ -458,6 +458,8 @@ function resetEditMode() {
 function showInputView() {
   activeId = null;
   resetEditMode();
+  document.querySelectorAll('.sidebar-toc').forEach(el => el.remove());
+  tocEntries = [];
   renderedView.classList.add('hidden');
   inputView.classList.remove('hidden');
   setCmContent('');
@@ -840,6 +842,8 @@ function handleIncomingUrlSilent() {
 function showInputViewSilent() {
   activeId = null;
   resetEditMode();
+  document.querySelectorAll('.sidebar-toc').forEach(el => el.remove());
+  tocEntries = [];
   renderedView.classList.add('hidden');
   inputView.classList.remove('hidden');
   setCmContent('');
