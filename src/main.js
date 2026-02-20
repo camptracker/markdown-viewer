@@ -96,7 +96,7 @@ function setTheme(theme) {
 }
 
 // ===== Default Welcome Doc =====
-const WELCOME_MD = `# 📝 sharemd.org
+const WELCOME_MD = `# Getting Started
 
 **Your instant markdown renderer.** Paste it, drop it, edit it, share it — no sign-up, no server, no nonsense.
 
@@ -321,15 +321,43 @@ function renderHistoryList() {
       });
     }
 
+    li.dataset.entryId = entry.id;
     li.querySelector('.history-item-info').addEventListener('click', () => showEntry(entry.id));
+
+    // Double-click name to rename (non-permanent only)
+    if (!entry.permanent) {
+      const nameEl = li.querySelector('.history-item-name');
+      nameEl.addEventListener('dblclick', (e) => {
+        e.stopPropagation();
+        const input = document.createElement('input');
+        input.type = 'text';
+        input.className = 'history-rename-input';
+        input.value = entry.name;
+        nameEl.replaceWith(input);
+        input.focus();
+        input.select();
+        const commit = () => {
+          const newName = input.value.trim() || entry.name;
+          entry.name = newName;
+          saveHistory();
+          if (activeId === entry.id) renderedTitle.textContent = newName;
+          renderHistoryList();
+        };
+        input.addEventListener('blur', commit);
+        input.addEventListener('keydown', (ev) => {
+          if (ev.key === 'Enter') input.blur();
+          if (ev.key === 'Escape') { input.value = entry.name; input.blur(); }
+        });
+      });
+    }
+
     historyList.appendChild(li);
   });
 }
 
 function updateActiveState() {
   historyList.querySelectorAll('.history-item').forEach((item) => {
-    const id = item.querySelector('[data-id]')?.dataset.id;
-    item.classList.toggle('active', id === activeId);
+    item.classList.toggle('active', item.dataset.entryId === activeId);
   });
 }
 
