@@ -1,7 +1,7 @@
 import { defineConfig } from 'vite';
 
 export default defineConfig({
-  base: '/markdown-viewer/',
+  base: process.env.VERCEL ? '/' : '/markdown-viewer/',
   build: {
     outDir: 'dist',
   },
