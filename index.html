@@ -3,16 +3,63 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-  <title>sharemd.org</title>
+
+  <!-- Primary SEO -->
+  <title>sharemd — Free Online Markdown Editor & Viewer | Paste, Edit, Share Instantly</title>
+  <meta name="description" content="Free online markdown editor and viewer. Paste, drag-and-drop, or write markdown — see it rendered instantly. Share via URL with no sign-up, no server, no data stored. 7 themes, syntax highlighting, table of contents, and shareable links." />
+  <meta name="keywords" content="markdown editor, markdown viewer, markdown renderer, online markdown, free markdown tool, markdown preview, share markdown, markdown to html, paste markdown, drag drop markdown, markdown themes, markdown syntax highlighting" />
+  <meta name="author" content="sharemd" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://camptracker.github.io/markdown-viewer/" />
   <meta name="theme-color" content="#ffffff" />
-  <meta name="description" content="Instant markdown rendering. Paste, drop, edit, and share — no sign-up, no server." />
+
+  <!-- Open Graph / Facebook -->
   <meta property="og:type" content="website" />
-  <meta property="og:title" content="sharemd.org" />
-  <meta property="og:description" content="Instant markdown rendering. Paste, drop, edit, and share — no sign-up, no server." />
-  <meta property="og:site_name" content="sharemd.org" />
+  <meta property="og:url" content="https://camptracker.github.io/markdown-viewer/" />
+  <meta property="og:title" content="sharemd — Free Online Markdown Editor & Viewer" />
+  <meta property="og:description" content="Paste, edit, and share markdown instantly. No sign-up, no server, no data stored. Beautiful themes, syntax highlighting, and shareable URLs." />
+  <meta property="og:site_name" content="sharemd" />
+  <meta property="og:locale" content="en_US" />
+
+  <!-- Twitter Card -->
   <meta name="twitter:card" content="summary" />
-  <meta name="twitter:title" content="sharemd.org" />
-  <meta name="twitter:description" content="Instant markdown rendering. Paste, drop, edit, and share — no sign-up, no server." />
+  <meta name="twitter:title" content="sharemd — Free Online Markdown Editor & Viewer" />
+  <meta name="twitter:description" content="Paste, edit, and share markdown instantly. No sign-up, no server, no data stored. Beautiful themes and shareable URLs." />
+
+  <!-- Structured Data (JSON-LD) -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "sharemd",
+    "url": "https://camptracker.github.io/markdown-viewer/",
+    "description": "Free online markdown editor and viewer. Paste, drag-and-drop, or write markdown and see it rendered instantly. Share documents via URL — no sign-up, no server, no data stored.",
+    "applicationCategory": "DeveloperApplication",
+    "operatingSystem": "Any",
+    "browserRequirements": "Requires a modern web browser",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "featureList": [
+      "Instant markdown rendering",
+      "Drag-and-drop file upload",
+      "Paste markdown directly",
+      "7 color themes (Light, Dark, Dracula, Monokai, One Dark, Solarized, Nord)",
+      "Syntax highlighting for code blocks",
+      "Auto-generated table of contents",
+      "Shareable URLs with full document encoded",
+      "Edit and preview toggle",
+      "Download as .md file",
+      "No sign-up required",
+      "No server — 100% client-side",
+      "Local storage history",
+      "Mobile responsive"
+    ]
+  }
+  </script>
+
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>" />
 </head>
 <body>
@@ -110,6 +157,29 @@
       </main>
     </div>
   </div>
+
+  <!-- SEO: crawlable content for SPA -->
+  <noscript>
+    <div style="max-width:700px;margin:40px auto;padding:0 20px;font-family:system-ui,sans-serif">
+      <h1>sharemd — Free Online Markdown Editor & Viewer</h1>
+      <p>Paste, drag-and-drop, or write markdown and see it rendered instantly. Share your documents via URL — no sign-up, no server, no data stored.</p>
+      <h2>Features</h2>
+      <ul>
+        <li>Instant markdown rendering with live preview</li>
+        <li>Drag-and-drop .md file upload</li>
+        <li>7 beautiful themes: Light, Dark, Dracula, Monokai, One Dark, Solarized, Nord</li>
+        <li>Syntax highlighting for 20+ programming languages</li>
+        <li>Auto-generated table of contents from headings</li>
+        <li>Shareable URLs — entire document encoded in the link</li>
+        <li>Edit and preview toggle</li>
+        <li>Download rendered documents as .md files</li>
+        <li>100% client-side — your data never leaves your browser</li>
+        <li>Local storage history for all your documents</li>
+        <li>Mobile responsive design</li>
+      </ul>
+      <p>Please enable JavaScript to use sharemd.</p>
+    </div>
+  </noscript>
 
   <script type="module" src="/src/main.js"></script>
 </body>
