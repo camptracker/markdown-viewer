@@ -193,13 +193,40 @@ function addToHistory(name, content) {
 }
 
 function deleteFromHistory(id) {
-  history = history.filter((e) => e.id !== id);
-  saveHistory();
-  if (activeId === id) {
-    activeId = null;
-    showInputView();
-  }
-  renderHistoryList();
+  const entry = history.find((e) => e.id === id);
+  showConfirmModal(
+    'Delete Document',
+    `Are you sure you want to delete "${entry ? escapeHtml(entry.name) : 'this document'}"?`,
+    () => {
+      history = history.filter((e) => e.id !== id);
+      saveHistory();
+      if (activeId === id) {
+        activeId = null;
+        showInputView();
+      }
+      renderHistoryList();
+    }
+  );
+}
+
+// ===== Confirm Modal =====
+function showConfirmModal(title, message, onConfirm) {
+  const overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  overlay.innerHTML = `
+    <div class="confirm-modal">
+      <h3 class="confirm-title">${title}</h3>
+      <p class="confirm-message">${message}</p>
+      <div class="confirm-actions">
+        <button class="confirm-btn cancel">Cancel</button>
+        <button class="confirm-btn delete">Delete</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+  overlay.querySelector('.cancel').addEventListener('click', () => overlay.remove());
+  overlay.querySelector('.delete').addEventListener('click', () => { overlay.remove(); onConfirm(); });
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
 }
 
 // ===== URL Serialization =====
