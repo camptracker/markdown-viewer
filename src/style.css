@@ -437,7 +437,8 @@ html, body {
   transition: opacity 0.1s;
 }
 
-.history-item:hover .history-item-delete {
+.history-item:hover .history-item-delete,
+.history-item.active .history-item-delete {
   opacity: 1;
 }
 
@@ -462,7 +463,8 @@ html, body {
   transition: opacity 0.15s, color 0.15s, background 0.15s;
 }
 
-.history-item:hover .history-item-rename {
+.history-item:hover .history-item-rename,
+.history-item.active .history-item-rename {
   opacity: 1;
 }
 
