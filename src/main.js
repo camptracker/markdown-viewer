@@ -78,6 +78,8 @@ const editArea = $('#editArea');
 const alignLeft = $('#alignLeft');
 const alignCenter = $('#alignCenter');
 const alignRight = $('#alignRight');
+const shareBtn = $('#shareBtn');
+const shareLabel = shareBtn?.querySelector('.share-label');
 let isEditMode = false;
 const ALIGN_KEY = 'md-viewer-align';
 
@@ -521,6 +523,29 @@ function initAlign() {
 alignLeft.addEventListener('click', () => setAlign('left'));
 alignCenter.addEventListener('click', () => setAlign('center'));
 alignRight.addEventListener('click', () => setAlign('right'));
+
+// Share button
+shareBtn.addEventListener('click', () => {
+  const url = window.location.href;
+  navigator.clipboard.writeText(url).then(() => {
+    shareLabel.textContent = 'Copied!';
+    shareBtn.classList.add('copied');
+    setTimeout(() => {
+      shareLabel.textContent = 'Share';
+      shareBtn.classList.remove('copied');
+    }, 2000);
+  }).catch(() => {
+    // Fallback
+    const input = document.createElement('input');
+    input.value = url;
+    document.body.appendChild(input);
+    input.select();
+    document.execCommand('copy');
+    input.remove();
+    shareLabel.textContent = 'Copied!';
+    setTimeout(() => { shareLabel.textContent = 'Share'; }, 2000);
+  });
+});
 
 // Edit/Preview toggle
 editToggle.addEventListener('click', () => {

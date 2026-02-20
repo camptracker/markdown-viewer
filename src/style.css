@@ -262,6 +262,32 @@ html, body {
   border-color: var(--accent-hover);
 }
 
+.btn-share {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 12px;
+  background: var(--bg-secondary);
+  color: var(--text-primary);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.8rem;
+  transition: all 0.2s;
+}
+
+.btn-share:hover {
+  background: var(--bg-tertiary);
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.btn-share.copied {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+
 .btn-secondary {
   background: var(--bg-secondary);
   color: var(--text-primary);
