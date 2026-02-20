@@ -70,11 +70,7 @@ const markdownInput = $('#markdownInput');
 const renderBtn = $('#renderBtn');
 const markdownOutput = $('#markdownOutput');
 const renderedTitle = $('#renderedTitle');
-const editToggle = $('#editToggle');
-const previewToggle = $('#previewToggle');
-const editArea = $('#editArea');
 const editTextarea = $('#editTextarea');
-let isEditMode = false;
 
 // ===== Theme =====
 const THEMES = ['light', 'dark', 'dracula', 'monokai', 'one-dark', 'solarized', 'nord'];
@@ -150,28 +146,19 @@ function renderMarkdown(content, title) {
 // ===== Views =====
 function showInputView() {
   activeId = null;
-  isEditMode = false;
   renderedView.classList.add('hidden');
   inputView.classList.remove('hidden');
   markdownInput.value = '';
-  resetEditMode();
+  editTextarea.value = '';
   updateActiveState();
   clearUrl();
-}
-
-function resetEditMode() {
-  isEditMode = false;
-  editArea.classList.add('hidden');
-  markdownOutput.classList.remove('hidden');
-  previewToggle.classList.add('active');
-  editToggle.classList.remove('active');
 }
 
 function showEntry(id) {
   const entry = history.find((e) => e.id === id);
   if (!entry) return;
   activeId = id;
-  resetEditMode();
+  editTextarea.value = entry.content;
   renderMarkdown(entry.content, entry.name);
   updateActiveState();
   updateUrlForEntry(entry);
@@ -330,33 +317,21 @@ markdownInput.addEventListener('keydown', (e) => {
 });
 
 // Edit/Preview toggle
-editToggle.addEventListener('click', () => {
-  if (isEditMode) return;
-  isEditMode = true;
-  const entry = history.find((e) => e.id === activeId);
-  if (entry) editTextarea.value = entry.content;
-  markdownOutput.classList.add('hidden');
-  editArea.classList.remove('hidden');
-  editToggle.classList.add('active');
-  previewToggle.classList.remove('active');
-  editTextarea.focus();
-});
-
-previewToggle.addEventListener('click', () => {
-  if (!isEditMode) return;
-  isEditMode = false;
-  // Save edits back to history
-  const entry = history.find((e) => e.id === activeId);
-  if (entry) {
-    entry.content = editTextarea.value;
-    saveHistory();
-    updateUrlForEntry(entry);
-  }
-  renderMarkdown(editTextarea.value, renderedTitle.textContent);
-  editArea.classList.add('hidden');
-  markdownOutput.classList.remove('hidden');
-  previewToggle.classList.add('active');
-  editToggle.classList.remove('active');
+// Live preview: update as you type
+let debounceTimer;
+editTextarea.addEventListener('input', () => {
+  clearTimeout(debounceTimer);
+  debounceTimer = setTimeout(() => {
+    const content = editTextarea.value;
+    renderMarkdown(content, renderedTitle.textContent);
+    // Save to history
+    const entry = history.find((e) => e.id === activeId);
+    if (entry) {
+      entry.content = content;
+      saveHistory();
+      updateUrlForEntry(entry);
+    }
+  }, 200);
 });
 
 // ===== URL Serialization =====

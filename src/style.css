@@ -580,55 +580,34 @@ textarea#markdownInput:focus {
   margin-right: 12px;
 }
 
-.rendered-header-actions {
+.split-pane {
   display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.edit-preview-toggle {
-  display: flex;
-  border: 1px solid var(--border-color);
-  border-radius: 6px;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
 }
 
-.toggle-btn {
-  padding: 5px 12px;
-  font-size: 13px;
-  font-weight: 500;
-  border: none;
-  background: var(--bg-primary);
-  color: var(--text-secondary);
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-
-.toggle-btn:not(:last-child) {
+.split-edit {
+  flex: 1;
+  display: flex;
+  min-width: 0;
   border-right: 1px solid var(--border-color);
 }
 
-.toggle-btn.active {
-  background: var(--accent-color);
-  color: #fff;
+.split-divider {
+  width: 0;
 }
 
-.toggle-btn:hover:not(.active) {
-  background: var(--bg-tertiary);
-}
-
-.edit-area {
+.split-preview {
   flex: 1;
-  display: flex;
-  min-height: 0;
+  overflow-y: auto;
+  min-width: 0;
 }
 
 .edit-textarea {
   width: 100%;
   height: 100%;
-  padding: 24px 32px;
-  max-width: 980px;
-  margin: 0 auto;
+  padding: 24px 20px;
   border: none;
   outline: none;
   resize: none;
@@ -638,6 +617,17 @@ textarea#markdownInput:focus {
   background: var(--bg-primary);
   color: var(--text-primary);
   tab-size: 2;
+}
+
+@media (max-width: 768px) {
+  .split-pane {
+    flex-direction: column;
+  }
+  .split-edit {
+    border-right: none;
+    border-bottom: 1px solid var(--border-color);
+    max-height: 40vh;
+  }
 }
 
 .markdown-body {

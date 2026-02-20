@@ -66,16 +66,15 @@
         <div class="rendered-view hidden" id="renderedView">
           <div class="rendered-header">
             <h2 id="renderedTitle">Preview</h2>
-            <div class="rendered-header-actions">
-              <div class="edit-preview-toggle">
-                <button class="toggle-btn active" id="previewToggle">Preview</button>
-                <button class="toggle-btn" id="editToggle">Edit</button>
-              </div>
-            </div>
           </div>
-          <article class="markdown-body" id="markdownOutput"></article>
-          <div class="edit-area hidden" id="editArea">
-            <textarea class="edit-textarea" id="editTextarea"></textarea>
+          <div class="split-pane">
+            <div class="split-edit">
+              <textarea class="edit-textarea" id="editTextarea"></textarea>
+            </div>
+            <div class="split-divider"></div>
+            <div class="split-preview">
+              <article class="markdown-body" id="markdownOutput"></article>
+            </div>
           </div>
         </div>
       </main>
