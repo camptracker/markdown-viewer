@@ -459,8 +459,10 @@ html, body {
   -webkit-tap-highlight-color: transparent;
 }
 
-.history-item:hover {
-  background: var(--history-hover);
+@media (hover: hover) {
+  .history-item:hover {
+    background: var(--history-hover);
+  }
 }
 
 .history-item.active {
@@ -500,9 +502,13 @@ html, body {
   transition: opacity 0.1s;
 }
 
-.history-item:hover .history-item-delete,
 .history-item.active .history-item-delete {
   opacity: 1;
+}
+@media (hover: hover) {
+  .history-item:hover .history-item-delete {
+    opacity: 1;
+  }
 }
 
 .history-item-actions {
@@ -526,19 +532,21 @@ html, body {
   transition: opacity 0.15s, color 0.15s, background 0.15s;
 }
 
-.history-item:hover .history-item-rename,
 .history-item.active .history-item-rename {
   opacity: 1;
 }
-
-.history-item-rename:hover {
-  color: var(--accent);
-  background: var(--bg-tertiary);
-}
-
-.history-item-delete:hover {
-  color: var(--danger);
-  background: var(--bg-tertiary);
+@media (hover: hover) {
+  .history-item:hover .history-item-rename {
+    opacity: 1;
+  }
+  .history-item-rename:hover {
+    color: var(--accent);
+    background: var(--bg-tertiary);
+  }
+  .history-item-delete:hover {
+    color: var(--danger);
+    background: var(--bg-tertiary);
+  }
 }
 
 /* ===== Confirm Modal ===== */
