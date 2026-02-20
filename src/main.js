@@ -76,6 +76,11 @@ const renderBtn = $('#renderBtn');
 const backBtn = $('#backBtn');
 const markdownOutput = $('#markdownOutput');
 const renderedTitle = $('#renderedTitle');
+const editToggle = $('#editToggle');
+const previewToggle = $('#previewToggle');
+const editArea = $('#editArea');
+const editTextarea = $('#editTextarea');
+let isEditMode = false;
 
 // ===== Theme =====
 function initTheme() {
@@ -149,16 +154,27 @@ function renderMarkdown(content, title) {
 // ===== Views =====
 function showInputView() {
   activeId = null;
+  isEditMode = false;
   renderedView.classList.add('hidden');
   inputView.classList.remove('hidden');
   markdownInput.value = '';
+  resetEditMode();
   updateActiveState();
+}
+
+function resetEditMode() {
+  isEditMode = false;
+  editArea.classList.add('hidden');
+  markdownOutput.classList.remove('hidden');
+  previewToggle.classList.add('active');
+  editToggle.classList.remove('active');
 }
 
 function showEntry(id) {
   const entry = history.find((e) => e.id === id);
   if (!entry) return;
   activeId = id;
+  resetEditMode();
   renderMarkdown(entry.content, entry.name);
   updateActiveState();
 
@@ -315,6 +331,35 @@ markdownInput.addEventListener('keydown', (e) => {
 
 // Back button
 backBtn.addEventListener('click', showInputView);
+
+// Edit/Preview toggle
+editToggle.addEventListener('click', () => {
+  if (isEditMode) return;
+  isEditMode = true;
+  const entry = history.find((e) => e.id === activeId);
+  if (entry) editTextarea.value = entry.content;
+  markdownOutput.classList.add('hidden');
+  editArea.classList.remove('hidden');
+  editToggle.classList.add('active');
+  previewToggle.classList.remove('active');
+  editTextarea.focus();
+});
+
+previewToggle.addEventListener('click', () => {
+  if (!isEditMode) return;
+  isEditMode = false;
+  // Save edits back to history
+  const entry = history.find((e) => e.id === activeId);
+  if (entry) {
+    entry.content = editTextarea.value;
+    saveHistory();
+  }
+  renderMarkdown(editTextarea.value, renderedTitle.textContent);
+  editArea.classList.add('hidden');
+  markdownOutput.classList.remove('hidden');
+  previewToggle.classList.add('active');
+  editToggle.classList.remove('active');
+});
 
 // ===== Init =====
 initTheme();

@@ -61,9 +61,18 @@
         <div class="rendered-view hidden" id="renderedView">
           <div class="rendered-header">
             <h2 id="renderedTitle">Preview</h2>
-            <button class="btn btn-secondary" id="backBtn">Back to Input</button>
+            <div class="rendered-header-actions">
+              <div class="edit-preview-toggle">
+                <button class="toggle-btn active" id="previewToggle">Preview</button>
+                <button class="toggle-btn" id="editToggle">Edit</button>
+              </div>
+              <button class="btn btn-secondary" id="backBtn">Back</button>
+            </div>
           </div>
           <article class="markdown-body" id="markdownOutput"></article>
+          <div class="edit-area hidden" id="editArea">
+            <textarea class="edit-textarea" id="editTextarea"></textarea>
+          </div>
         </div>
       </main>
     </div>
