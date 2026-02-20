@@ -477,7 +477,8 @@ function handleFile(file) {
 function handlePaste() {
   const content = markdownInput.value.trim();
   if (!content) return;
-  const name = 'Untitled Paste ' + formatDate(new Date().toISOString());
+  const headerMatch = content.match(/^#{1,6}\s+(.+)$/m);
+  const name = (headerMatch ? headerMatch[1].trim() : null) || 'Untitled Paste ' + formatDate(new Date().toISOString());
   const entry = addToHistory(name, content);
   activeId = entry.id;
   editTextarea.value = content;
