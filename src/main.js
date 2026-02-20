@@ -38,13 +38,7 @@ marked.setOptions({
 const renderer = new marked.Renderer();
 
 renderer.heading = function ({ text, depth }) {
-  const slug = String(text)
-    .toLowerCase()
-    .replace(/<[^>]*>/g, '')
-    .replace(/[^\w\s-]/g, '')
-    .replace(/\s+/g, '-')
-    .trim();
-  return `<h${depth} id="${slug}"><a class="anchor" href="#${slug}">#</a>${text}</h${depth}>`;
+  return `<h${depth}>${text}</h${depth}>`;
 };
 
 renderer.image = function ({ href, title, text }) {
