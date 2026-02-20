@@ -96,13 +96,13 @@ function initTheme() {
 }
 
 const THEME_COLORS = {
-  light: '#ffffff',
-  dark: '#0d1117',
-  dracula: '#282a36',
-  monokai: '#272822',
-  'atom-one-dark': '#282c34',
-  solarized: '#002b36',
-  nord: '#2e3440',
+  light: '#f6f8fa',
+  dark: '#161b22',
+  dracula: '#21222c',
+  monokai: '#1e1f1c',
+  'one-dark': '#21252b',
+  solarized: '#073642',
+  nord: '#3b4252',
 };
 
 function setTheme(theme) {
