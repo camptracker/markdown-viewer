@@ -75,7 +75,11 @@ const editTextarea = $('#editTextarea');
 const editToggle = $('#editToggle');
 const previewToggle = $('#previewToggle');
 const editArea = $('#editArea');
+const alignLeft = $('#alignLeft');
+const alignCenter = $('#alignCenter');
+const alignRight = $('#alignRight');
 let isEditMode = false;
+const ALIGN_KEY = 'md-viewer-align';
 
 // ===== Theme =====
 function initTheme() {
@@ -345,6 +349,26 @@ markdownInput.addEventListener('keydown', (e) => {
   }
 });
 
+// Alignment
+function setAlign(align) {
+  renderedView.classList.remove('align-left', 'align-center', 'align-right');
+  renderedView.classList.add('align-' + align);
+  [alignLeft, alignCenter, alignRight].forEach(b => b.classList.remove('active'));
+  if (align === 'left') alignLeft.classList.add('active');
+  else if (align === 'center') alignCenter.classList.add('active');
+  else alignRight.classList.add('active');
+  localStorage.setItem(ALIGN_KEY, align);
+}
+
+function initAlign() {
+  const saved = localStorage.getItem(ALIGN_KEY) || 'left';
+  setAlign(saved);
+}
+
+alignLeft.addEventListener('click', () => setAlign('left'));
+alignCenter.addEventListener('click', () => setAlign('center'));
+alignRight.addEventListener('click', () => setAlign('right'));
+
 // Edit/Preview toggle
 editToggle.addEventListener('click', () => {
   if (isEditMode) return;
@@ -397,6 +421,7 @@ window.addEventListener('hashchange', () => {
 });
 
 initTheme();
+initAlign();
 loadHighlightTheme();
 renderHistoryList();
 handleIncomingUrl();

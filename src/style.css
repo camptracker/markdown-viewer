@@ -586,6 +586,36 @@ textarea#markdownInput:focus {
   gap: 8px;
 }
 
+.align-toggle {
+  display: flex;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.align-toggle .toggle-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 5px 8px;
+}
+
+/* Alignment classes for the preview scroll container */
+.rendered-view.align-left .markdown-body {
+  margin-left: 0;
+  margin-right: auto;
+}
+
+.rendered-view.align-center .markdown-body {
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.rendered-view.align-right .markdown-body {
+  margin-left: auto;
+  margin-right: 0;
+}
+
 .edit-preview-toggle {
   display: flex;
   border: 1px solid var(--border-color);
