@@ -674,35 +674,18 @@ alignLeft.addEventListener('click', () => setAlign('left'));
 alignCenter.addEventListener('click', () => setAlign('center'));
 alignRight.addEventListener('click', () => setAlign('right'));
 
-// Copy URL button (shortens via TinyURL, falls back to raw URL)
+// Copy URL button
 const copyUrlBtn = $('#copyUrlBtn');
-copyUrlBtn.addEventListener('click', async () => {
-  copyUrlBtn.classList.add('loading');
-  copyUrlBtn.setAttribute('title', 'Shortening…');
-
-  const rawUrl = window.location.href;
-  let urlToCopy = rawUrl;
-
-  try {
-    const tinyUrlApi = 'https://tinyurl.com/api-create.php?url=' + encodeURIComponent(rawUrl);
-    const res = await fetch('https://corsproxy.io/?' + encodeURIComponent(tinyUrlApi));
-    if (res.ok) {
-      const shortened = (await res.text()).trim();
-      if (shortened.startsWith('http')) urlToCopy = shortened;
-    }
-  } catch {
-    // shortener failed — use raw URL
-  }
-
-  await navigator.clipboard.writeText(urlToCopy);
-  copyUrlBtn.classList.remove('loading');
-  copyUrlBtn.classList.add('copied');
-  copyUrlBtn.setAttribute('title', 'Copied!');
-  showToast(urlToCopy === rawUrl ? 'Link copied!' : 'Short link copied!');
-  setTimeout(() => {
-    copyUrlBtn.classList.remove('copied');
-    copyUrlBtn.setAttribute('title', 'Copy URL');
-  }, 2000);
+copyUrlBtn.addEventListener('click', () => {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    copyUrlBtn.classList.add('copied');
+    copyUrlBtn.setAttribute('title', 'Copied!');
+    showToast('Link copied!');
+    setTimeout(() => {
+      copyUrlBtn.classList.remove('copied');
+      copyUrlBtn.setAttribute('title', 'Copy URL');
+    }, 2000);
+  });
 });
 
 // QR Code button
