@@ -684,9 +684,10 @@ copyUrlBtn.addEventListener('click', async () => {
   let urlToCopy = rawUrl;
 
   try {
-    const res = await fetch('https://tinyurl.com/api-create.php?url=' + encodeURIComponent(rawUrl));
+    const tinyUrlApi = 'https://tinyurl.com/api-create.php?url=' + encodeURIComponent(rawUrl);
+    const res = await fetch('https://corsproxy.io/?' + encodeURIComponent(tinyUrlApi));
     if (res.ok) {
-      const shortened = await res.text();
+      const shortened = (await res.text()).trim();
       if (shortened.startsWith('http')) urlToCopy = shortened;
     }
   } catch {
