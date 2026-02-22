@@ -1124,21 +1124,22 @@ function updateLineNumbers(textarea, gutter) {
   const nums = [];
   for (let i = 1; i <= Math.max(lines, 1); i++) nums.push(i);
   gutter.textContent = nums.join('\n');
+  autoResizeTextarea(textarea);
 }
 
-function syncScroll(textarea, gutter) {
-  if (gutter) gutter.scrollTop = textarea.scrollTop;
+function autoResizeTextarea(textarea) {
+  // Expand textarea to fit content so wrapper scrolls both together
+  textarea.style.height = 'auto';
+  textarea.style.height = textarea.scrollHeight + 'px';
 }
 
 editTextarea.addEventListener('input', () => {
   debounceSave();
   updateLineNumbers(editTextarea, lineNumbersEl);
 });
-editTextarea.addEventListener('scroll', () => syncScroll(editTextarea, lineNumbersEl));
 
 if (markdownInput && pasteLineNumbersEl) {
   markdownInput.addEventListener('input', () => updateLineNumbers(markdownInput, pasteLineNumbersEl));
-  markdownInput.addEventListener('scroll', () => syncScroll(markdownInput, pasteLineNumbersEl));
   updateLineNumbers(markdownInput, pasteLineNumbersEl);
 }
 
