@@ -925,12 +925,50 @@ textarea#markdownInput:focus {
   min-height: 0;
 }
 
+.edit-wrapper {
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  max-width: 980px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.line-numbers {
+  padding: 24px 8px 24px 12px;
+  text-align: right;
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text-muted, #999);
+  user-select: none;
+  overflow: hidden;
+  min-width: 40px;
+  background: var(--bg-primary);
+  border-right: 1px solid var(--border-color);
+}
+
+.paste-area .edit-wrapper {
+  border: 1px solid var(--border-color);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.paste-area .edit-wrapper .line-numbers {
+  padding: 12px 8px 12px 12px;
+  min-height: 200px;
+}
+
+.paste-area .edit-wrapper textarea#markdownInput {
+  border: none;
+  border-radius: 0;
+}
+
 .edit-textarea {
   width: 100%;
   height: 100%;
-  padding: 24px 32px;
-  max-width: 980px;
-  margin: 0 auto;
+  padding: 24px 32px 24px 16px;
+  flex: 1;
   border: none;
   outline: none;
   resize: none;

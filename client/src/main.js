@@ -1091,6 +1091,7 @@ editToggle.addEventListener('click', () => {
   if (activeEntry) editTextarea.value = activeEntry.content;
   markdownOutput.classList.add('hidden');
   editArea.classList.remove('hidden');
+  updateLineNumbers(editTextarea, lineNumbersEl);
   editToggle.classList.add('active');
   previewToggle.classList.remove('active');
 });
@@ -1113,9 +1114,34 @@ previewToggle.addEventListener('click', async () => {
 });
 
 // Auto-save on typing in edit mode
+// ===== Line Numbers =====
+const lineNumbersEl = document.getElementById('lineNumbers');
+const pasteLineNumbersEl = document.getElementById('pasteLineNumbers');
+const markdownInput = document.getElementById('markdownInput');
+
+function updateLineNumbers(textarea, gutter) {
+  if (!gutter) return;
+  const lines = (textarea.value || '').split('\n').length;
+  const nums = [];
+  for (let i = 1; i <= Math.max(lines, 1); i++) nums.push(i);
+  gutter.textContent = nums.join('\n');
+}
+
+function syncScroll(textarea, gutter) {
+  if (gutter) gutter.scrollTop = textarea.scrollTop;
+}
+
 editTextarea.addEventListener('input', () => {
   debounceSave();
+  updateLineNumbers(editTextarea, lineNumbersEl);
 });
+editTextarea.addEventListener('scroll', () => syncScroll(editTextarea, lineNumbersEl));
+
+if (markdownInput && pasteLineNumbersEl) {
+  markdownInput.addEventListener('input', () => updateLineNumbers(markdownInput, pasteLineNumbersEl));
+  markdownInput.addEventListener('scroll', () => syncScroll(markdownInput, pasteLineNumbersEl));
+  updateLineNumbers(markdownInput, pasteLineNumbersEl);
+}
 
 // Handle back/forward
 window.addEventListener('popstate', async () => {

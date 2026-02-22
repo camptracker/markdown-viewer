@@ -119,7 +119,10 @@
           <div class="divider"><span>or paste markdown below</span></div>
 
           <div class="paste-area">
-            <textarea id="markdownInput" placeholder="Paste your markdown here..."></textarea>
+            <div class="edit-wrapper">
+              <div class="line-numbers" id="pasteLineNumbers" aria-hidden="true"></div>
+              <textarea id="markdownInput" placeholder="Paste your markdown here..."></textarea>
+            </div>
             <button class="btn btn-primary render-btn" id="renderBtn">Render</button>
           </div>
         </div>
@@ -157,7 +160,10 @@
             </div>
           </div>
           <div class="edit-area hidden" id="editArea">
-            <textarea class="edit-textarea" id="editTextarea"></textarea>
+            <div class="edit-wrapper">
+              <div class="line-numbers" id="lineNumbers" aria-hidden="true"></div>
+              <textarea class="edit-textarea" id="editTextarea"></textarea>
+            </div>
           </div>
           <article class="markdown-body" id="markdownOutput"></article>
         </div>
