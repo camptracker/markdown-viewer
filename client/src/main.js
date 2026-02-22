@@ -1156,9 +1156,14 @@ async function init() {
     showInputView();
   }
 
-  // Collapse sidebar on mobile
-  if (window.innerWidth <= 768) {
+  // Collapse sidebar on mobile (unless just logged in)
+  const params = new URLSearchParams(window.location.search);
+  if (window.innerWidth <= 768 && !params.get('auth')) {
     sidebarEl.classList.add('collapsed');
+  }
+  // Clean up auth param from URL
+  if (params.get('auth')) {
+    window.history.replaceState({}, '', window.location.pathname);
   }
 }
 
