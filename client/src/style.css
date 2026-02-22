@@ -1200,3 +1200,34 @@ textarea#markdownInput:focus {
 .toggle-switch.active .toggle-knob {
   transform: translateX(20px);
 }
+
+/* ===== Auth UI ===== */
+.auth-area {
+  display: flex;
+  align-items: center;
+}
+.user-menu {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.user-avatar {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+}
+.user-name {
+  font-size: 0.85em;
+  color: var(--text-secondary);
+  max-width: 100px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.btn-sm {
+  padding: 4px 10px;
+  font-size: 0.8em;
+}
+@media (max-width: 768px) {
+  .user-name { display: none; }
+}
