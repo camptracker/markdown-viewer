@@ -121,11 +121,18 @@ router.patch('/:id', async (req, res) => {
   try {
     const item = await MarkdownItem.findById(req.params.id);
     if (!item) return res.status(404).json({ error: 'Not found' });
-    if (!item.can_edit) {
+    const isOwner = req.user && item.user.toString() === req.user._id.toString();
+
+    const { content, title, can_edit } = req.body;
+    // Only owner can change can_edit
+    if (can_edit !== undefined) {
+      if (!isOwner) return res.status(403).json({ error: 'Only the owner can change edit permissions' });
+      item.can_edit = can_edit;
+    }
+    // Non-owners need can_edit to modify content/title
+    if (!isOwner && !item.can_edit) {
       return res.status(403).json({ error: 'Document is read-only' });
     }
-
-    const { content, title } = req.body;
     if (content !== undefined) item.content = content;
     if (title !== undefined) item.title = title;
     await item.save();
@@ -142,14 +149,18 @@ router.put('/:id', async (req, res) => {
   try {
     const item = await MarkdownItem.findById(req.params.id);
     if (!item) return res.status(404).json({ error: 'Not found' });
-    if (!item.can_edit) {
-      return res.status(403).json({ error: 'Document is read-only' });
-    }
+    const isOwner = req.user && item.user.toString() === req.user._id.toString();
 
     const { content, title, can_edit } = req.body;
+    if (can_edit !== undefined) {
+      if (!isOwner) return res.status(403).json({ error: 'Only the owner can change edit permissions' });
+      item.can_edit = can_edit;
+    }
+    if (!isOwner && !item.can_edit) {
+      return res.status(403).json({ error: 'Document is read-only' });
+    }
     if (content !== undefined) item.content = content;
     if (title !== undefined) item.title = title;
-    if (can_edit !== undefined) item.can_edit = can_edit;
     await item.save();
 
     res.json({ markdown: item });

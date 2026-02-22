@@ -407,18 +407,18 @@ async function fetchMarkdown(id) {
   if (mdCache.has(id)) {
     const cached = mdCache.get(id);
     if (cached.author !== undefined) return cached;
-    // Fetch full data to get author
+    // Fetch full data to get author and isOwner
     try {
       const data = await api.get(`/api/markdowns/${id}`);
-      if (data.author) cached.author = data.author;
-      else cached.author = null;
+      cached.author = data.author || null;
+      cached.isOwner = !!data.isOwner;
       return cached;
     } catch { return cached; }
   }
   try {
     const data = await api.get(`/api/markdowns/${id}`);
-    if (data.author) data.markdown.author = data.author;
-    else data.markdown.author = null;
+    data.markdown.author = data.author || null;
+    data.markdown.isOwner = !!data.isOwner;
     mdCache.set(id, data.markdown);
     return data.markdown;
   } catch (err) {
@@ -613,6 +613,15 @@ function updateEditToggleVisibility() {
     editToggle.classList.remove('hidden');
   } else {
     editToggle.classList.add('hidden');
+  }
+  // Only show settings button for document owner
+  const settingsBtn = $('#settingsBtn');
+  if (settingsBtn) {
+    if (activeEntry?.isOwner && activeId !== 'welcome') {
+      settingsBtn.classList.remove('hidden');
+    } else {
+      settingsBtn.classList.add('hidden');
+    }
   }
 }
 
