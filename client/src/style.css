@@ -1296,3 +1296,13 @@ textarea#markdownInput:focus {
   font-size: 0.8em;
 }
 /* user-name always visible in sidebar */
+
+/* Author attribution at bottom of preview */
+.author-attribution {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(128, 128, 128, 0.2);
+  font-size: 0.85em;
+  color: #888;
+  text-align: left;
+}

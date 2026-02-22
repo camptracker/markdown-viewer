@@ -54,11 +54,18 @@ router.post('/', async (req, res) => {
 // Get single markdown (public)
 router.get('/:id', async (req, res) => {
   try {
-    const item = await MarkdownItem.findById(req.params.id);
+    const item = await MarkdownItem.findById(req.params.id)
+      .populate('user', 'github_username google_name google_email visitor_id');
     if (!item) return res.status(404).json({ error: 'Not found' });
     // Check if current user is owner
-    const isOwner = req.user && item.user.toString() === req.user._id.toString();
-    res.json({ markdown: item, isOwner });
+    const isOwner = req.user && item.user._id.toString() === req.user._id.toString();
+    // Derive author display name
+    const u = item.user;
+    const author = u?.github_username || u?.google_name || u?.google_email || (u?.visitor_id ? u.visitor_id.slice(0, 8) : null);
+    // Strip populated user from response
+    const mdObj = item.toObject();
+    mdObj.user = item.user._id;
+    res.json({ markdown: mdObj, isOwner, author });
   } catch (err) {
     if (err.name === 'CastError') return res.status(404).json({ error: 'Not found' });
     throw err;

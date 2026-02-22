@@ -407,6 +407,7 @@ async function fetchMarkdown(id) {
   if (mdCache.has(id)) return mdCache.get(id);
   try {
     const data = await api.get(`/api/markdowns/${id}`);
+    if (data.author) data.markdown.author = data.author;
     mdCache.set(id, data.markdown);
     return data.markdown;
   } catch (err) {
@@ -541,6 +542,16 @@ function renderMarkdownContent(content, title) {
     ADD_ATTR: ['type', 'checked', 'disabled', 'class', 'id'],
   });
   markdownOutput.innerHTML = clean;
+  // Remove any previous author attribution
+  const oldAuthor = document.querySelector('.author-attribution');
+  if (oldAuthor) oldAuthor.remove();
+  // Add author attribution if available
+  if (activeEntry?.author && activeId !== 'welcome') {
+    const authorDiv = document.createElement('div');
+    authorDiv.className = 'author-attribution';
+    authorDiv.textContent = `by ${activeEntry.author}`;
+    markdownOutput.appendChild(authorDiv);
+  }
   currentTitle = title || 'Preview';
   inputView.classList.add('hidden');
   renderedView.classList.remove('hidden');
