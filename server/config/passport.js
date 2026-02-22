@@ -14,7 +14,7 @@ export default function configurePassport() {
     }
   });
 
-  // Helper: transfer markdowns from visitor to OAuth user, then delete visitor
+  // Helper: transfer markdowns from visitor to OAuth user, keep visitor alive (empty)
   async function transferMarkdowns(visitorId, oauthUser) {
     if (!visitorId) return;
     const visitor = await User.findOne({ visitor_id: visitorId });
@@ -26,12 +26,13 @@ export default function configurePassport() {
         { user: visitor._id },
         { $set: { user: oauthUser._id } }
       );
-      // Add markdown refs to OAuth user
+      // Add markdown refs to OAuth user, clear from visitor
       oauthUser.markdowns.push(...visitor.markdowns);
       await oauthUser.save();
+      visitor.markdowns = [];
+      await visitor.save();
     }
-    // Delete the visitor user (it's now empty)
-    await User.deleteOne({ _id: visitor._id });
+    // Keep visitor user alive so logout restores to it
   }
 
   if (process.env.GITHUB_CLIENT_ID) {
