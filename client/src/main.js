@@ -1203,6 +1203,13 @@ async function init() {
   if (params.get('auth')) {
     window.history.replaceState({}, '', window.location.pathname);
   }
+
+  // Dismiss loading screen
+  const loadingScreen = $('#loadingScreen');
+  if (loadingScreen) {
+    loadingScreen.classList.add('fade-out');
+    setTimeout(() => loadingScreen.classList.add('hidden'), 300);
+  }
 }
 
 init();
@@ -1225,9 +1232,4 @@ if (mainContent && floatingToolbar) {
   });
 }
 
-// Dismiss loading screen
-const loadingScreen = $('#loadingScreen');
-if (loadingScreen) {
-  loadingScreen.classList.add('fade-out');
-  setTimeout(() => loadingScreen.classList.add('hidden'), 300);
-}
+// Loading screen dismissed in init()
