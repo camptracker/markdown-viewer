@@ -917,6 +917,33 @@ sidebarToggle.addEventListener('click', () => {
   }
 });
 
+// ===== Mobile Swipe Gestures =====
+let touchStartX = 0;
+let touchStartY = 0;
+document.addEventListener('touchstart', (e) => {
+  touchStartX = e.touches[0].clientX;
+  touchStartY = e.touches[0].clientY;
+}, { passive: true });
+
+document.addEventListener('touchend', (e) => {
+  if (window.innerWidth > 768) return;
+  const dx = e.changedTouches[0].clientX - touchStartX;
+  const dy = e.changedTouches[0].clientY - touchStartY;
+  // Only trigger on horizontal swipes (not vertical scrolls)
+  if (Math.abs(dx) < 50 || Math.abs(dy) > Math.abs(dx)) return;
+
+  if (dx > 0 && sidebarEl.classList.contains('collapsed')) {
+    // Swipe right → open sidebar
+    sidebarEl.classList.remove('collapsed');
+    createOverlay();
+    document.getElementById('floatingToolbar')?.classList.add('sidebar-open-hide');
+  } else if (dx < 0 && !sidebarEl.classList.contains('collapsed')) {
+    // Swipe left → close sidebar
+    sidebarEl.classList.add('collapsed');
+    removeOverlay();
+  }
+}, { passive: true });
+
 newBtn.addEventListener('click', showInputView);
 
 fileInput.addEventListener('change', (e) => {
