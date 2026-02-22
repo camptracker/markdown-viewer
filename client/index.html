@@ -61,11 +61,20 @@
   </script>
 
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📝</text></svg>" />
+  <script>
+    // Apply theme before paint to avoid flash
+    (function() {
+      var t = localStorage.getItem('md-viewer-theme');
+      var themes = ['light','dark','dracula','monokai','one-dark','solarized','nord'];
+      if (!t || themes.indexOf(t) === -1) t = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.setAttribute('data-theme', t);
+    })();
+  </script>
 </head>
 <body>
   <div id="app">
     <!-- Top Bar -->
-    <header class="topbar">
+    <header class="topbar" style="display:none" id="topbar">
       <button class="sidebar-toggle" id="sidebarToggle" aria-label="Toggle sidebar">
         <svg width="20" height="20" viewBox="0 0 20 20" fill="none"><rect y="3" width="20" height="2" rx="1" fill="currentColor"/><rect y="9" width="20" height="2" rx="1" fill="currentColor"/><rect y="15" width="20" height="2" rx="1" fill="currentColor"/></svg>
       </button>
@@ -83,7 +92,7 @@
       </div>
     </header>
 
-    <div class="layout">
+    <div class="layout" style="display:none" id="layout">
       <!-- Sidebar -->
       <aside class="sidebar collapsed" id="sidebar">
         <div class="sidebar-header">

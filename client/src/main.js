@@ -1204,7 +1204,12 @@ async function init() {
     window.history.replaceState({}, '', window.location.pathname);
   }
 
-  // Dismiss loading screen
+  // Show app and dismiss loading screen
+  const topbar = document.getElementById('topbar');
+  const layout = document.getElementById('layout');
+  if (topbar) topbar.style.display = '';
+  if (layout) layout.style.display = '';
+
   const loadingScreen = $('#loadingScreen');
   if (loadingScreen) {
     loadingScreen.classList.add('fade-out');
