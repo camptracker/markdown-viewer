@@ -1117,7 +1117,6 @@ previewToggle.addEventListener('click', async () => {
 // ===== Line Numbers =====
 const lineNumbersEl = document.getElementById('lineNumbers');
 const pasteLineNumbersEl = document.getElementById('pasteLineNumbers');
-const markdownInput = document.getElementById('markdownInput');
 
 function updateLineNumbers(textarea, gutter) {
   if (!gutter) return;
