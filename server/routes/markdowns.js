@@ -6,9 +6,12 @@ const router = Router();
 // List user's markdowns
 router.get('/', async (req, res) => {
   if (!req.user) return res.json({ markdowns: [] });
-  const items = await MarkdownItem.find({ user: req.user._id })
+  // Fetch markdowns from user's list (includes both owned and added-via-link)
+  const user = await User.findById(req.user._id);
+  if (!user?.markdowns?.length) return res.json({ markdowns: [] });
+  const items = await MarkdownItem.find({ _id: { $in: user.markdowns } })
     .sort({ updated_at: -1 })
-    .select('-content'); // Don't send full content in list
+    .select('-content');
   res.json({ markdowns: items });
 });
 
