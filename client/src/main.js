@@ -1162,11 +1162,17 @@ async function init() {
     showInputView();
   }
 
-  // Collapse sidebar on mobile (unless just logged in)
   const params = new URLSearchParams(window.location.search);
-  if (window.innerWidth <= 768 && !params.get('auth')) {
-    sidebarEl.classList.add('collapsed');
+  const hasMarkdownRoute = /^\/[a-f0-9]{24}$/i.test(window.location.pathname);
+
+  // Open sidebar on homepage or after auth redirect; keep collapsed on markdown URLs
+  if (!hasMarkdownRoute || params.get('auth')) {
+    // On mobile, only open after auth (not on homepage)
+    if (window.innerWidth > 768 || params.get('auth')) {
+      sidebarEl.classList.remove('collapsed');
+    }
   }
+
   // Clean up auth param from URL
   if (params.get('auth')) {
     window.history.replaceState({}, '', window.location.pathname);
