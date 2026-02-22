@@ -403,11 +403,22 @@ async function deleteMarkdown(id) {
 }
 
 async function fetchMarkdown(id) {
-  // Return cached version instantly if available
-  if (mdCache.has(id)) return mdCache.get(id);
+  // Return cached version if available, but fetch author if missing
+  if (mdCache.has(id)) {
+    const cached = mdCache.get(id);
+    if (cached.author !== undefined) return cached;
+    // Fetch full data to get author
+    try {
+      const data = await api.get(`/api/markdowns/${id}`);
+      if (data.author) cached.author = data.author;
+      else cached.author = null;
+      return cached;
+    } catch { return cached; }
+  }
   try {
     const data = await api.get(`/api/markdowns/${id}`);
     if (data.author) data.markdown.author = data.author;
+    else data.markdown.author = null;
     mdCache.set(id, data.markdown);
     return data.markdown;
   } catch (err) {
