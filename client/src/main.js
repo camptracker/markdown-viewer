@@ -120,6 +120,7 @@ let activeId = null;
 let activeCanEdit = true;
 let isEditMode = false;
 let savePending = null; // debounce timer
+const mdCache = new Map(); // _id -> full markdown object
 
 // ===== DOM References =====
 const $ = (sel) => document.querySelector(sel);
@@ -251,7 +252,7 @@ async function createMarkdown(content, title, canEdit) {
   try {
     const data = await api.post('/api/markdowns', { content, title, can_edit: canEdit });
     const md = data.markdown;
-    // Add to local history (without content for consistency)
+    mdCache.set(md._id, md);
     history.unshift({ _id: md._id, title: md.title, can_edit: md.can_edit, created_at: md.created_at, updated_at: md.updated_at });
     renderHistoryList();
     return md;
@@ -265,7 +266,7 @@ async function createMarkdown(content, title, canEdit) {
 async function patchMarkdown(id, updates) {
   try {
     const data = await api.patch(`/api/markdowns/${id}`, updates);
-    // Update local history entry
+    mdCache.set(id, data.markdown);
     const idx = history.findIndex(e => e._id === id);
     if (idx !== -1) {
       if (updates.title !== undefined) history[idx].title = updates.title;
@@ -287,6 +288,7 @@ async function patchMarkdown(id, updates) {
 async function deleteMarkdown(id) {
   try {
     await api.del(`/api/markdowns/${id}`);
+    mdCache.delete(id);
     history = history.filter(e => e._id !== id);
     if (activeId === id) {
       activeId = null;
@@ -301,8 +303,11 @@ async function deleteMarkdown(id) {
 }
 
 async function fetchMarkdown(id) {
+  // Return cached version instantly if available
+  if (mdCache.has(id)) return mdCache.get(id);
   try {
     const data = await api.get(`/api/markdowns/${id}`);
+    mdCache.set(id, data.markdown);
     return data.markdown;
   } catch (err) {
     console.error('Failed to fetch markdown:', err);
@@ -316,8 +321,9 @@ function debounceSave() {
   if (savePending) clearTimeout(savePending);
   savePending = setTimeout(async () => {
     const content = editTextarea.value;
-    await patchMarkdown(activeId, { content });
     if (activeEntry) activeEntry.content = content;
+    if (mdCache.has(activeId)) mdCache.get(activeId).content = content;
+    await patchMarkdown(activeId, { content });
   }, 2000);
 }
 
