@@ -926,13 +926,24 @@ sidebarToggle.addEventListener('click', () => {
 // ===== Mobile Swipe Gestures =====
 let touchStartX = 0;
 let touchStartY = 0;
+let touchStartedInScrollable = false;
+
+function isHorizontallyScrollable(el) {
+  while (el && el !== document.body) {
+    if (el.scrollWidth > el.clientWidth + 1) return true;
+    el = el.parentElement;
+  }
+  return false;
+}
+
 document.addEventListener('touchstart', (e) => {
   touchStartX = e.touches[0].clientX;
   touchStartY = e.touches[0].clientY;
+  touchStartedInScrollable = isHorizontallyScrollable(e.target);
 }, { passive: true });
 
 document.addEventListener('touchend', (e) => {
-  if (window.innerWidth > 768) return;
+  if (window.innerWidth > 768 || touchStartedInScrollable) return;
   const dx = e.changedTouches[0].clientX - touchStartX;
   const dy = e.changedTouches[0].clientY - touchStartY;
   // Only trigger on horizontal swipes (not vertical scrolls)
