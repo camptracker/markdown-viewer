@@ -65,6 +65,28 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// Bulk create markdowns
+router.post('/bulk', async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Not authenticated' });
+  const { items } = req.body; // [{title, content, can_edit}]
+  if (!Array.isArray(items)) return res.status(400).json({ error: 'items array required' });
+
+  const results = [];
+  for (const item of items) {
+    const md = await MarkdownItem.create({
+      content: item.content || '',
+      title: item.title || 'Untitled',
+      can_edit: item.can_edit !== undefined ? item.can_edit : true,
+      user: req.user._id,
+    });
+    await User.findByIdAndUpdate(req.user._id, {
+      $push: { markdowns: { markdown: md._id, added_at: new Date() } },
+    });
+    results.push({ _id: md._id, title: md.title });
+  }
+  res.status(201).json({ created: results.length, markdowns: results });
+});
+
 // Add existing markdown to user's list (for shared links)
 router.post('/:id/add', async (req, res) => {
   if (!req.user) return res.status(401).json({ error: 'Not authenticated' });
