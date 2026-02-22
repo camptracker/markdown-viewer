@@ -942,11 +942,17 @@ textarea#markdownInput:focus {
   line-height: 1.6;
   color: var(--text-muted, #999);
   user-select: none;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
+  scrollbar-width: none;
   min-width: 40px;
   background: var(--bg-primary);
   border-right: 1px solid var(--border-color);
   white-space: pre;
+}
+
+.line-numbers::-webkit-scrollbar {
+  display: none;
 }
 
 .paste-area .edit-wrapper {
