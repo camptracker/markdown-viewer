@@ -680,8 +680,7 @@ async function handleFile(file) {
   const reader = new FileReader();
   reader.onload = async (e) => {
     const content = e.target.result;
-    const canEdit = await showEditPermissionModal();
-    const md = await createMarkdown(content, file.name, canEdit);
+    const md = await createMarkdown(content, file.name, true);
     if (!md) return;
     activeId = md._id;
     activeEntry = md;
@@ -701,8 +700,7 @@ async function handlePaste() {
   const headerMatch = content.match(/^#{1,6}\s+(.+)$/m);
   const name = (headerMatch ? headerMatch[1].trim() : null) || 'Untitled Paste ' + formatDate(new Date().toISOString());
 
-  const canEdit = await showEditPermissionModal();
-  const md = await createMarkdown(content, name, canEdit);
+  const md = await createMarkdown(content, name, true);
   if (!md) return;
 
   activeId = md._id;
@@ -932,6 +930,56 @@ function downloadQrFallback() {
 qrCopyBtn.addEventListener('click', copyQrImage);
 qrCloseBtn.addEventListener('click', () => qrModal.classList.add('hidden'));
 qrModal.addEventListener('click', (e) => { if (e.target === qrModal) qrModal.classList.add('hidden'); });
+
+// Settings button (toggle can_edit)
+const settingsBtn = $('#settingsBtn');
+settingsBtn.addEventListener('click', () => {
+  if (!activeEntry || activeId === 'welcome') return;
+  const currentCanEdit = activeEntry.can_edit;
+  const overlay = document.createElement('div');
+  overlay.className = 'confirm-overlay';
+  overlay.innerHTML = `
+    <div class="confirm-modal">
+      <h3 class="confirm-title">Document Settings</h3>
+      <div style="display:flex;align-items:center;gap:10px;margin:16px 0;">
+        <label style="flex:1;font-size:0.95em;">Allow anyone to edit</label>
+        <button class="toggle-switch ${currentCanEdit ? 'active' : ''}" id="canEditSwitch" aria-label="Toggle editing">
+          <span class="toggle-knob"></span>
+        </button>
+      </div>
+      <div class="confirm-actions">
+        <button class="confirm-btn cancel">Close</button>
+      </div>
+    </div>
+  `;
+  document.body.appendChild(overlay);
+
+  const toggle = overlay.querySelector('#canEditSwitch');
+  let newVal = currentCanEdit;
+
+  toggle.addEventListener('click', async () => {
+    newVal = !newVal;
+    toggle.classList.toggle('active', newVal);
+    const result = await patchMarkdown(activeId, { can_edit: newVal });
+    if (result) {
+      activeEntry.can_edit = newVal;
+      activeCanEdit = newVal;
+      updateEditToggleVisibility();
+      // Update history list to show/hide lock
+      const idx = history.findIndex(e => e._id === activeId);
+      if (idx !== -1) history[idx].can_edit = newVal;
+      renderHistoryList();
+      showToast(newVal ? 'Editing enabled' : 'Document locked');
+    } else {
+      // Revert toggle on failure
+      newVal = !newVal;
+      toggle.classList.toggle('active', newVal);
+    }
+  });
+
+  overlay.querySelector('.cancel').addEventListener('click', () => overlay.remove());
+  overlay.addEventListener('click', (e) => { if (e.target === overlay) overlay.remove(); });
+});
 
 // Download button
 downloadBtn.addEventListener('click', () => {
