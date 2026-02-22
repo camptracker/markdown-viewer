@@ -322,6 +322,16 @@ async function loadHistoryFromAPI() {
   }
 }
 
+function deriveTitle(content) {
+  if (!content) return 'Untitled';
+  // Try first markdown header
+  const headerMatch = content.match(/^#{1,6}\s+(.+)$/m);
+  if (headerMatch) return headerMatch[1].trim();
+  // Fall back to first non-empty line (truncated)
+  const firstLine = content.split('\n').find(l => l.trim())?.trim() || 'Untitled';
+  return firstLine.length > 60 ? firstLine.slice(0, 60) + '…' : firstLine;
+}
+
 async function createMarkdown(content, title, canEdit) {
   try {
     const data = await api.post('/api/markdowns', { content, title, can_edit: canEdit });
@@ -754,7 +764,7 @@ async function handleFile(file) {
   const reader = new FileReader();
   reader.onload = async (e) => {
     const content = e.target.result;
-    const md = await createMarkdown(content, file.name, true);
+    const md = await createMarkdown(content, file.name.replace(/\.(md|markdown|txt)$/i, '') || deriveTitle(content), true);
     if (!md) return;
     activeId = md._id;
     activeEntry = md;
@@ -771,10 +781,7 @@ async function handleFile(file) {
 async function handlePaste() {
   const content = getCmContent().trim();
   if (!content) return;
-  const headerMatch = content.match(/^#{1,6}\s+(.+)$/m);
-  const name = (headerMatch ? headerMatch[1].trim() : null) || 'Untitled Paste ' + formatDate(new Date().toISOString());
-
-  const md = await createMarkdown(content, name, true);
+  const md = await createMarkdown(content, deriveTitle(content), true);
   if (!md) return;
 
   activeId = md._id;
@@ -806,8 +813,7 @@ async function handleLegacyHash() {
   }
 
   // Create a new markdown from hash content (editable by default for legacy)
-  const name = title || 'Migrated ' + formatDate(new Date().toISOString());
-  const md = await createMarkdown(content, name, true);
+  const md = await createMarkdown(content, title || deriveTitle(content), true);
   if (!md) return false;
 
   activeId = md._id;
