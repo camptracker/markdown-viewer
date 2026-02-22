@@ -856,12 +856,14 @@ function createOverlay() {
   overlay.addEventListener('click', () => {
     sidebarEl.classList.add('collapsed');
     removeOverlay();
+    document.getElementById('floatingToolbar')?.classList.remove('sidebar-open-hide');
   });
   document.querySelector('.layout').appendChild(overlay);
 }
 
 function removeOverlay() {
   document.querySelector('.sidebar-overlay')?.remove();
+  document.getElementById('floatingToolbar')?.classList.remove('sidebar-open-hide');
 }
 
 // ===== Helpers =====
@@ -882,8 +884,14 @@ themeSelect.addEventListener('change', (e) => setTheme(e.target.value));
 
 sidebarToggle.addEventListener('click', () => {
   const isCollapsed = sidebarEl.classList.toggle('collapsed');
-  if (!isCollapsed && window.innerWidth <= 768) createOverlay();
-  else removeOverlay();
+  if (!isCollapsed && window.innerWidth <= 768) {
+    createOverlay();
+    // Hide floating toolbar on mobile when sidebar opens
+    document.getElementById('floatingToolbar')?.classList.add('sidebar-open-hide');
+  } else {
+    removeOverlay();
+    document.getElementById('floatingToolbar')?.classList.remove('sidebar-open-hide');
+  }
 });
 
 newBtn.addEventListener('click', showInputView);
