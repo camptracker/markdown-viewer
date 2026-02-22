@@ -6,13 +6,28 @@ const router = Router();
 // List user's markdowns
 router.get('/', async (req, res) => {
   if (!req.user) return res.json({ markdowns: [] });
-  // Fetch markdowns from user's list (includes both owned and added-via-link)
   const user = await User.findById(req.user._id);
   if (!user?.markdowns?.length) return res.json({ markdowns: [] });
-  const items = await MarkdownItem.find({ _id: { $in: user.markdowns } })
-    .sort({ updated_at: -1 })
-    .select('-content');
-  res.json({ markdowns: items });
+
+  // Build map of markdown_id -> added_at
+  const addedMap = {};
+  for (const entry of user.markdowns) {
+    const id = entry.markdown?.toString() || entry.toString();
+    addedMap[id] = entry.added_at || entry._id?.getTimestamp?.() || new Date();
+  }
+
+  const ids = user.markdowns.map(e => e.markdown || e);
+  const items = await MarkdownItem.find({ _id: { $in: ids } }).select('-content');
+
+  // Add added_at to each item and sort by most recently added
+  const result = items.map(item => {
+    const obj = item.toObject();
+    obj.added_at = addedMap[item._id.toString()] || obj.created_at;
+    return obj;
+  });
+  result.sort((a, b) => new Date(b.added_at) - new Date(a.added_at));
+
+  res.json({ markdowns: result });
 });
 
 // Create markdown
@@ -30,7 +45,7 @@ router.post('/', async (req, res) => {
 
   // Add to user's markdowns array
   await User.findByIdAndUpdate(req.user._id, {
-    $push: { markdowns: item._id },
+    $push: { markdowns: { markdown: item._id, added_at: new Date() } },
   });
 
   res.status(201).json({ markdown: item });
@@ -58,8 +73,11 @@ router.post('/:id/add', async (req, res) => {
     if (!item) return res.status(404).json({ error: 'Not found' });
 
     // Only add if not already in user's list
-    if (!req.user.markdowns.includes(item._id)) {
-      req.user.markdowns.push(item._id);
+    const alreadyHas = req.user.markdowns.some(e => 
+      (e.markdown || e).toString() === item._id.toString()
+    );
+    if (!alreadyHas) {
+      req.user.markdowns.push({ markdown: item._id, added_at: new Date() });
       await req.user.save();
     }
     res.json({ ok: true });
@@ -123,7 +141,7 @@ router.delete('/:id', async (req, res) => {
     }
 
     await User.findByIdAndUpdate(req.user._id, {
-      $pull: { markdowns: item._id },
+      $pull: { markdowns: { markdown: item._id } },
     });
     await MarkdownItem.deleteOne({ _id: item._id });
 

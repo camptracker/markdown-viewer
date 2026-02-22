@@ -347,7 +347,7 @@ async function createMarkdown(content, title, canEdit) {
     const data = await api.post('/api/markdowns', { content, title, can_edit: canEdit });
     const md = data.markdown;
     mdCache.set(md._id, md);
-    history.unshift({ _id: md._id, title: md.title, can_edit: md.can_edit, created_at: md.created_at, updated_at: md.updated_at });
+    history.unshift({ _id: md._id, title: md.title, can_edit: md.can_edit, added_at: md.added_at || new Date().toISOString(), created_at: md.created_at, updated_at: md.updated_at });
     renderHistoryList();
     return md;
   } catch (err) {
@@ -651,7 +651,7 @@ async function showEntry(id) {
 
   // If not in user's history, add it locally and persist to backend
   if (!history.find(h => h._id === md._id)) {
-    history.unshift({ _id: md._id, title: md.title, can_edit: md.can_edit, created_at: md.created_at, updated_at: md.updated_at });
+    history.unshift({ _id: md._id, title: md.title, can_edit: md.can_edit, added_at: md.added_at || new Date().toISOString(), created_at: md.created_at, updated_at: md.updated_at });
     renderHistoryList();
     // Persist to backend so it survives refresh
     api.post(`/api/markdowns/${md._id}/add`, {}).catch(() => {});
@@ -730,7 +730,7 @@ function renderHistoryList() {
         </div>
       `;
     } else {
-      const dateStr = entry.updated_at || entry.created_at;
+      const dateStr = entry.added_at || entry.updated_at || entry.created_at;
       li.innerHTML = `
         <div class="history-item-info">
           <div class="history-item-name">${escapeHtml(title)}${!entry.can_edit ? ' <span style="opacity:0.5;font-size:0.75em;">🔒</span>' : ''}</div>

@@ -26,8 +26,8 @@ const userSchema = new mongoose.Schema(
     google_access_token: String,
     markdowns: [
       {
-        type: mongoose.Schema.Types.ObjectId,
-        ref: 'MarkdownItem',
+        markdown: { type: mongoose.Schema.Types.ObjectId, ref: 'MarkdownItem' },
+        added_at: { type: Date, default: Date.now },
       },
     ],
   },
