@@ -946,6 +946,7 @@ textarea#markdownInput:focus {
   min-width: 40px;
   background: var(--bg-primary);
   border-right: 1px solid var(--border-color);
+  white-space: pre;
 }
 
 .paste-area .edit-wrapper {
