@@ -639,6 +639,12 @@ async function showEntry(id) {
     return;
   }
 
+  // If not in user's history, add it
+  if (!history.find(h => h._id === md._id)) {
+    history.unshift({ _id: md._id, title: md.title, can_edit: md.can_edit, created_at: md.created_at, updated_at: md.updated_at });
+    renderHistoryList();
+  }
+
   activeId = md._id;
   activeEntry = md;
   activeCanEdit = md.can_edit;
