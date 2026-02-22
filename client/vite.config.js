@@ -13,4 +13,6 @@ export default defineConfig({
       },
     },
   },
+  // SPA fallback: serve index.html for /{id} routes
+  appType: 'spa',
 });

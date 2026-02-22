@@ -1,11 +1,11 @@
 import { Router } from 'express';
 import { MarkdownItem, User } from '../models/index.js';
-import { requireAuth } from '../middleware/auth.js';
 
 const router = Router();
 
 // List user's markdowns
-router.get('/', requireAuth, async (req, res) => {
+router.get('/', async (req, res) => {
+  if (!req.user) return res.json({ markdowns: [] });
   const items = await MarkdownItem.find({ user: req.user._id })
     .sort({ updated_at: -1 })
     .select('-content'); // Don't send full content in list
@@ -13,7 +13,8 @@ router.get('/', requireAuth, async (req, res) => {
 });
 
 // Create markdown
-router.post('/', requireAuth, async (req, res) => {
+router.post('/', async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Not authenticated' });
   const { content, title, can_edit } = req.body;
   if (!content) return res.status(400).json({ error: 'content is required' });
 
@@ -32,49 +33,83 @@ router.post('/', requireAuth, async (req, res) => {
   res.status(201).json({ markdown: item });
 });
 
-// Get single markdown
+// Get single markdown (public)
 router.get('/:id', async (req, res) => {
-  const item = await MarkdownItem.findById(req.params.id);
-  if (!item) return res.status(404).json({ error: 'Not found' });
-
-  // Public access: anyone can read. Ownership check only for edits.
-  res.json({ markdown: item });
+  try {
+    const item = await MarkdownItem.findById(req.params.id);
+    if (!item) return res.status(404).json({ error: 'Not found' });
+    // Check if current user is owner
+    const isOwner = req.user && item.user.toString() === req.user._id.toString();
+    res.json({ markdown: item, isOwner });
+  } catch (err) {
+    if (err.name === 'CastError') return res.status(404).json({ error: 'Not found' });
+    throw err;
+  }
 });
 
-// Update markdown
-router.put('/:id', requireAuth, async (req, res) => {
-  const item = await MarkdownItem.findById(req.params.id);
-  if (!item) return res.status(404).json({ error: 'Not found' });
-  if (item.user.toString() !== req.user._id.toString()) {
-    return res.status(403).json({ error: 'Forbidden' });
-  }
-  if (!item.can_edit) {
-    return res.status(403).json({ error: 'Document is read-only' });
-  }
+// Patch markdown (partial update)
+router.patch('/:id', async (req, res) => {
+  try {
+    const item = await MarkdownItem.findById(req.params.id);
+    if (!item) return res.status(404).json({ error: 'Not found' });
+    if (!item.can_edit) {
+      return res.status(403).json({ error: 'Document is read-only' });
+    }
 
-  const { content, title, can_edit } = req.body;
-  if (content !== undefined) item.content = content;
-  if (title !== undefined) item.title = title;
-  if (can_edit !== undefined) item.can_edit = can_edit;
-  await item.save();
+    const { content, title } = req.body;
+    if (content !== undefined) item.content = content;
+    if (title !== undefined) item.title = title;
+    await item.save();
 
-  res.json({ markdown: item });
+    res.json({ markdown: item });
+  } catch (err) {
+    if (err.name === 'CastError') return res.status(404).json({ error: 'Not found' });
+    throw err;
+  }
 });
 
-// Delete markdown
-router.delete('/:id', requireAuth, async (req, res) => {
-  const item = await MarkdownItem.findById(req.params.id);
-  if (!item) return res.status(404).json({ error: 'Not found' });
-  if (item.user.toString() !== req.user._id.toString()) {
-    return res.status(403).json({ error: 'Forbidden' });
+// Update markdown (full update)
+router.put('/:id', async (req, res) => {
+  try {
+    const item = await MarkdownItem.findById(req.params.id);
+    if (!item) return res.status(404).json({ error: 'Not found' });
+    if (!item.can_edit) {
+      return res.status(403).json({ error: 'Document is read-only' });
+    }
+
+    const { content, title, can_edit } = req.body;
+    if (content !== undefined) item.content = content;
+    if (title !== undefined) item.title = title;
+    if (can_edit !== undefined) item.can_edit = can_edit;
+    await item.save();
+
+    res.json({ markdown: item });
+  } catch (err) {
+    if (err.name === 'CastError') return res.status(404).json({ error: 'Not found' });
+    throw err;
   }
+});
 
-  await User.findByIdAndUpdate(req.user._id, {
-    $pull: { markdowns: item._id },
-  });
-  await MarkdownItem.deleteOne({ _id: item._id });
+// Delete markdown (owner only)
+router.delete('/:id', async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Not authenticated' });
+  try {
+    const item = await MarkdownItem.findById(req.params.id);
+    if (!item) return res.status(404).json({ error: 'Not found' });
+    if (item.user.toString() !== req.user._id.toString()) {
+      return res.status(403).json({ error: 'Forbidden' });
+    }
 
-  res.json({ ok: true });
+    await User.findByIdAndUpdate(req.user._id, {
+      $pull: { markdowns: item._id },
+    });
+    await MarkdownItem.deleteOne({ _id: item._id });
+
+    res.json({ ok: true });
+  } catch (err) {
+    if (err.name === 'CastError') return res.status(404).json({ error: 'Not found' });
+    throw err;
+  }
 });
 
 export default router;
