@@ -6,35 +6,60 @@ import DOMPurify from 'dompurify';
 import { decompressFromEncodedURIComponent } from 'lz-string';
 import QRCode from 'qrcode';
 
+// ===== Visitor ID (persisted in localStorage) =====
+const VISITOR_KEY = 'md-viewer-visitor-id';
+
+function getVisitorId() {
+  return localStorage.getItem(VISITOR_KEY);
+}
+
+function setVisitorId(id) {
+  if (id) localStorage.setItem(VISITOR_KEY, id);
+}
+
+function visitorHeaders() {
+  const id = getVisitorId();
+  return id ? { 'x-visitor-id': id } : {};
+}
+
+function captureVisitorId(res) {
+  const id = res.headers.get('x-visitor-id');
+  if (id) setVisitorId(id);
+}
+
 // ===== API Client =====
 const api = {
   async get(path) {
-    const res = await fetch(path, { credentials: 'include' });
+    const res = await fetch(path, { credentials: 'include', headers: visitorHeaders() });
+    captureVisitorId(res);
     if (!res.ok) throw new Error(`GET ${path}: ${res.status}`);
     return res.json();
   },
   async post(path, body) {
     const res = await fetch(path, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...visitorHeaders() },
       credentials: 'include',
       body: JSON.stringify(body),
     });
+    captureVisitorId(res);
     if (!res.ok) throw new Error(`POST ${path}: ${res.status}`);
     return res.json();
   },
   async patch(path, body) {
     const res = await fetch(path, {
       method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
+      headers: { 'Content-Type': 'application/json', ...visitorHeaders() },
       credentials: 'include',
       body: JSON.stringify(body),
     });
+    captureVisitorId(res);
     if (!res.ok) throw new Error(`PATCH ${path}: ${res.status}`);
     return res.json();
   },
   async del(path) {
-    const res = await fetch(path, { method: 'DELETE', credentials: 'include' });
+    const res = await fetch(path, { method: 'DELETE', credentials: 'include', headers: visitorHeaders() });
+    captureVisitorId(res);
     if (!res.ok) throw new Error(`DELETE ${path}: ${res.status}`);
     return res.json();
   },

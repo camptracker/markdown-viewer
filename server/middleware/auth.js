@@ -14,11 +14,26 @@ export async function ensureUser(req, res, next) {
     }
   }
 
-  // Create new visitor
-  const visitorId = uuidv4();
+  // Check for visitor_id from client header (persisted in localStorage)
+  const clientVisitorId = req.headers['x-visitor-id'];
+  if (clientVisitorId) {
+    const user = await User.findOne({ visitor_id: clientVisitorId });
+    if (user) {
+      req.session.visitorId = clientVisitorId;
+      req.user = user;
+      return next();
+    }
+  }
+
+  // Create new visitor (use client-provided ID if valid UUID format, otherwise generate)
+  const visitorId = clientVisitorId && /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i.test(clientVisitorId)
+    ? clientVisitorId
+    : uuidv4();
   const user = await User.create({ visitor_id: visitorId });
   req.session.visitorId = visitorId;
   req.user = user;
+  // Send the visitor_id back so client can store it
+  res.setHeader('x-visitor-id', visitorId);
   next();
 }
 
