@@ -18,6 +18,9 @@ const isProduction = process.env.NODE_ENV === 'production';
 
 const app = express();
 
+// Trust Railway's reverse proxy so secure cookies work
+app.set('trust proxy', 1);
+
 // Security
 app.use(
   helmet({
