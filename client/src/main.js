@@ -324,6 +324,12 @@ async function loadHistoryFromAPI() {
   try {
     const data = await api.get('/api/markdowns');
     history = data.markdowns || [];
+    // Preload all content into cache
+    for (const md of history) {
+      if (md.content !== undefined) {
+        mdCache.set(md._id, md);
+      }
+    }
     renderHistoryList();
   } catch (err) {
     console.error('Failed to load history:', err);

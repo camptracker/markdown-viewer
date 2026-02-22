@@ -17,7 +17,7 @@ router.get('/', async (req, res) => {
   }
 
   const ids = user.markdowns.map(e => e.markdown || e);
-  const items = await MarkdownItem.find({ _id: { $in: ids } }).select('-content');
+  const items = await MarkdownItem.find({ _id: { $in: ids } });
 
   // Add added_at to each item and sort by most recently added
   const result = items.map(item => {
