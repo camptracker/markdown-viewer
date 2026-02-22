@@ -1,11 +1,9 @@
 import passport from 'passport';
 import { Strategy as GitHubStrategy } from 'passport-github2';
 import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
-import { User } from '../models/index.js';
+import { User, MarkdownItem } from '../models/index.js';
 
 export default function configurePassport() {
-  console.log('Passport config: GITHUB_CLIENT_ID exists:', !!process.env.GITHUB_CLIENT_ID);
-  console.log('Passport config: GOOGLE_CLIENT_ID exists:', !!process.env.GOOGLE_CLIENT_ID);
   passport.serializeUser((user, done) => done(null, user._id));
   passport.deserializeUser(async (id, done) => {
     try {
@@ -15,6 +13,26 @@ export default function configurePassport() {
       done(err);
     }
   });
+
+  // Helper: transfer markdowns from visitor to OAuth user, then delete visitor
+  async function transferMarkdowns(visitorId, oauthUser) {
+    if (!visitorId) return;
+    const visitor = await User.findOne({ visitor_id: visitorId });
+    if (!visitor || visitor._id.equals(oauthUser._id)) return;
+
+    // Transfer markdown ownership
+    if (visitor.markdowns?.length) {
+      await MarkdownItem.updateMany(
+        { user: visitor._id },
+        { $set: { user: oauthUser._id } }
+      );
+      // Add markdown refs to OAuth user
+      oauthUser.markdowns.push(...visitor.markdowns);
+      await oauthUser.save();
+    }
+    // Delete the visitor user (it's now empty)
+    await User.deleteOne({ _id: visitor._id });
+  }
 
   if (process.env.GITHUB_CLIENT_ID) {
     passport.use(
@@ -28,37 +46,26 @@ export default function configurePassport() {
         async (req, accessToken, refreshToken, profile, done) => {
           try {
             let user = await User.findOne({ github_id: profile.id });
+            const visitorId = req.session?.visitorId;
+
             if (user) {
-              // Existing OAuth user — update tokens
+              // Returning GitHub user — update profile, no markdown transfer
               user.github_username = profile.username;
               user.github_avatar_url = profile.photos?.[0]?.value;
               user.github_access_token = accessToken;
               await user.save();
-              done(null, user);
             } else {
-              // First time GitHub login — try to merge with visitor
-              const visitorId = req.session?.visitorId || req.cookies?.visitor_id;
-              let visitor = visitorId ? await User.findOne({ visitor_id: visitorId }) : null;
-
-              if (visitor) {
-                // Merge: upgrade visitor to GitHub user
-                visitor.github_id = profile.id;
-                visitor.github_username = profile.username;
-                visitor.github_avatar_url = profile.photos?.[0]?.value;
-                visitor.github_access_token = accessToken;
-                await visitor.save();
-                done(null, visitor);
-              } else {
-                // No visitor to merge — create fresh
-                user = await User.create({
-                  github_id: profile.id,
-                  github_username: profile.username,
-                  github_avatar_url: profile.photos?.[0]?.value,
-                  github_access_token: accessToken,
-                });
-                done(null, user);
-              }
+              // First-time GitHub login — create new OAuth user (no visitor_id!)
+              user = await User.create({
+                github_id: profile.id,
+                github_username: profile.username,
+                github_avatar_url: profile.photos?.[0]?.value,
+                github_access_token: accessToken,
+              });
+              // Transfer markdowns from visitor to this new OAuth user
+              await transferMarkdowns(visitorId, user);
             }
+            done(null, user);
           } catch (err) {
             done(err);
           }
@@ -80,36 +87,28 @@ export default function configurePassport() {
         async (req, accessToken, refreshToken, profile, done) => {
           try {
             let user = await User.findOne({ google_id: profile.id });
+            const visitorId = req.session?.visitorId;
+
             if (user) {
+              // Returning Google user — update profile, no markdown transfer
               user.google_email = profile.emails?.[0]?.value;
               user.google_name = profile.displayName;
               user.google_avatar_url = profile.photos?.[0]?.value;
               user.google_access_token = accessToken;
               await user.save();
-              done(null, user);
             } else {
-              const visitorId = req.session?.visitorId || req.cookies?.visitor_id;
-              let visitor = visitorId ? await User.findOne({ visitor_id: visitorId }) : null;
-
-              if (visitor) {
-                visitor.google_id = profile.id;
-                visitor.google_email = profile.emails?.[0]?.value;
-                visitor.google_name = profile.displayName;
-                visitor.google_avatar_url = profile.photos?.[0]?.value;
-                visitor.google_access_token = accessToken;
-                await visitor.save();
-                done(null, visitor);
-              } else {
-                user = await User.create({
-                  google_id: profile.id,
-                  google_email: profile.emails?.[0]?.value,
-                  google_name: profile.displayName,
-                  google_avatar_url: profile.photos?.[0]?.value,
-                  google_access_token: accessToken,
-                });
-                done(null, user);
-              }
+              // First-time Google login — create new OAuth user (no visitor_id!)
+              user = await User.create({
+                google_id: profile.id,
+                google_email: profile.emails?.[0]?.value,
+                google_name: profile.displayName,
+                google_avatar_url: profile.photos?.[0]?.value,
+                google_access_token: accessToken,
+              });
+              // Transfer markdowns from visitor to this new OAuth user
+              await transferMarkdowns(visitorId, user);
             }
+            done(null, user);
           } catch (err) {
             done(err);
           }
@@ -118,4 +117,3 @@ export default function configurePassport() {
     );
   }
 }
-// OAuth env vars configured

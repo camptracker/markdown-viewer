@@ -83,7 +83,7 @@ function updateAuthUI() {
   const authArea = document.querySelector('#authArea');
   if (!authArea) return;
 
-  if (currentUser && (currentUser.github_id || currentUser.google_id)) {
+  if (currentUser?.isAuthenticated) {
     const name = currentUser.github_username || currentUser.google_name || currentUser.google_email || 'User';
     const avatar = currentUser.github_avatar_url || currentUser.google_avatar_url;
     authArea.innerHTML = `
@@ -95,7 +95,7 @@ function updateAuthUI() {
     `;
     authArea.querySelector('#logoutBtn').addEventListener('click', async () => {
       await api.post('/api/auth/logout', {});
-      localStorage.removeItem(VISITOR_KEY);
+      // Keep visitor_id in localStorage — ensureUser will restore visitor session
       currentUser = null;
       updateAuthUI();
       window.location.reload();
