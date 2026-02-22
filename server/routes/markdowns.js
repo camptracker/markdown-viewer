@@ -47,6 +47,25 @@ router.get('/:id', async (req, res) => {
   }
 });
 
+// Add existing markdown to user's list (for shared links)
+router.post('/:id/add', async (req, res) => {
+  if (!req.user) return res.status(401).json({ error: 'Not authenticated' });
+  try {
+    const item = await MarkdownItem.findById(req.params.id);
+    if (!item) return res.status(404).json({ error: 'Not found' });
+
+    // Only add if not already in user's list
+    if (!req.user.markdowns.includes(item._id)) {
+      req.user.markdowns.push(item._id);
+      await req.user.save();
+    }
+    res.json({ ok: true });
+  } catch (err) {
+    if (err.name === 'CastError') return res.status(404).json({ error: 'Not found' });
+    throw err;
+  }
+});
+
 // Patch markdown (partial update)
 router.patch('/:id', async (req, res) => {
   try {

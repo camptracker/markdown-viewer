@@ -649,10 +649,12 @@ async function showEntry(id) {
     return;
   }
 
-  // If not in user's history, add it
+  // If not in user's history, add it locally and persist to backend
   if (!history.find(h => h._id === md._id)) {
     history.unshift({ _id: md._id, title: md.title, can_edit: md.can_edit, created_at: md.created_at, updated_at: md.updated_at });
     renderHistoryList();
+    // Persist to backend so it survives refresh
+    api.post(`/api/markdowns/${md._id}/add`, {}).catch(() => {});
   }
 
   activeId = md._id;
