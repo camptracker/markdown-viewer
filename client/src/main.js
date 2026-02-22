@@ -97,8 +97,7 @@ function updateAuthUI() {
       await api.post('/api/auth/logout', {});
       // Keep visitor_id in localStorage — ensureUser will restore visitor session
       currentUser = null;
-      updateAuthUI();
-      window.location.reload();
+      window.location.href = '/';
     });
   } else {
     authArea.innerHTML = `<button class="btn btn-secondary" id="loginBtn">Login</button>`;
