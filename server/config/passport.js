@@ -116,4 +116,4 @@ export default function configurePassport() {
     );
   }
 }
-# OAuth env vars configured
+// OAuth env vars configured
