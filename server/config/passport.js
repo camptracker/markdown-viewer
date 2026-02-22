@@ -4,6 +4,8 @@ import { Strategy as GoogleStrategy } from 'passport-google-oauth20';
 import { User } from '../models/index.js';
 
 export default function configurePassport() {
+  console.log('Passport config: GITHUB_CLIENT_ID exists:', !!process.env.GITHUB_CLIENT_ID);
+  console.log('Passport config: GOOGLE_CLIENT_ID exists:', !!process.env.GOOGLE_CLIENT_ID);
   passport.serializeUser((user, done) => done(null, user._id));
   passport.deserializeUser(async (id, done) => {
     try {
