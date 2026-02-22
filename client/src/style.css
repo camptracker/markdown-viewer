@@ -229,6 +229,16 @@ html, body {
   z-index: 100;
 }
 
+.topbar-user-id {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-family: 'SFMono-Regular', Consolas, 'Liberation Mono', Menlo, monospace;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 150px;
+}
+
 .topbar-actions {
   display: flex;
   align-items: center;

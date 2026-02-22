@@ -83,6 +83,16 @@ function updateAuthUI() {
   const authArea = document.querySelector('#authArea');
   if (!authArea) return;
 
+  // Update topbar user ID
+  const userIdEl = document.getElementById('topbarUserId');
+  if (userIdEl && currentUser) {
+    if (currentUser.isAuthenticated) {
+      userIdEl.textContent = currentUser.github_username || currentUser.google_name || currentUser.google_email || '';
+    } else {
+      userIdEl.textContent = currentUser.visitor_id ? currentUser.visitor_id.slice(0, 8) : '';
+    }
+  }
+
   if (currentUser?.isAuthenticated) {
     const name = currentUser.github_username || currentUser.google_name || currentUser.google_email || 'User';
     const avatar = currentUser.github_avatar_url || currentUser.google_avatar_url;
